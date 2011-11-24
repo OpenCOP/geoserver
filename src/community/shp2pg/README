@@ -1,0 +1,13 @@
+shp2pg -- A GeoServer Extension that provides a wicket page for uploading a 
+Shapefile to a PostGIS datastore.
+
+
+Building:
+Make sure the required dependencies are in your .m2 repository (see pom.xml).
+
+mvn clean install
+
+
+Installing:
+Copy the jar from the target directory to geoserver/WEB-INF/lib.
+Make sure all dependencies are also in the lib directory (e.g., geoserver-manager).
