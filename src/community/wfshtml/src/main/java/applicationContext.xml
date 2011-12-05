@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">  
+
+<beans>
+  <bean id="HTMLOutputFormat" class="org.geoserver.wfs.response.HTMLOutputFormat">
+    <constructor-arg ref="geoServer"/>
+    <constructor-arg ref="geojsonOutputFormat"/>
+    <constructor-arg ref="gml3OutputFormat"/>
+  </bean>
+</beans>
