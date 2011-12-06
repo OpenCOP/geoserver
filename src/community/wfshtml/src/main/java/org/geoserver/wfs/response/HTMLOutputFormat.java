@@ -14,7 +14,6 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.HashMap;
-import java.util.List;
 import net.opengis.wfs.FeatureCollectionType;
 import net.opengis.wfs.GetFeatureType;
 import org.geoserver.config.GeoServer;
@@ -45,7 +44,6 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
     bw.setExposureLevel(BeansWrapper.EXPOSE_PROPERTIES_ONLY);
     cfg.setObjectWrapper(bw);
   }
-
   private GeoJSONOutputFormat jsonFormatter;
 
   public HTMLOutputFormat(GeoServer gs) {
@@ -103,75 +101,47 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
 
     // Get the layer name
 //    if (featureCollection.getFeature().size() == 1) {
-      SimpleFeatureCollection features = (SimpleFeatureCollection) featureCollection.getFeature().get(0);
-      SimpleFeatureType featureType = features.getSchema();
-      map.put("layerName", featureType.getName().getLocalPart());
-      map.put("layerNS", featureType.getName().getNamespaceURI());
+    SimpleFeatureCollection features = (SimpleFeatureCollection) featureCollection.getFeature().get(0);
+    SimpleFeatureType featureType = features.getSchema();
+    map.put("layerName", featureType.getName().getLocalPart());
+    map.put("layerNS", featureType.getName().getNamespaceURI());
 //    } else {
 //      map.put("layerName", "GeoServer Layers");
 //    }
 //      featureType.getGeometryDescriptor().getName().getLocalPart()
-      String geometryName = "null";
-      
-      if( null != featureType.getGeometryDescriptor() ) {
-        geometryName = '"' + featureType.getGeometryDescriptor().getName().getLocalPart() + '"';
-      }
-      map.put("geometryName", geometryName);
+
+    // Get the geometry column's name
+    map.put("geometryName", getGeometryColumnName(featureType));
 
     // Get the features JSON
-    ByteArrayOutputStream featureJsonStream = new ByteArrayOutputStream();
-    jsonFormatter.write(featureCollection, featureJsonStream, getFeature);
-    map.put("getFeatureJson", featureJsonStream.toString());
+    map.put("featureJson", getFeaturesAsJson(featureCollection, getFeature));
 
     // get the fields and columns JSONs
-    List<AttributeType> attributes = featureType.getTypes();
-            
     StringWriter fieldStringWriter = new StringWriter();
     GeoJSONBuilder fieldJsonBuilder = new GeoJSONBuilder(fieldStringWriter);
-    
+
     StringWriter columnStringWriter = new StringWriter();
     GeoJSONBuilder columnJsonBuilder = new GeoJSONBuilder(columnStringWriter);
 
     fieldJsonBuilder.array();
     columnJsonBuilder.array();
 
-    for( AttributeType attribute : attributes ) {
+    for (AttributeType attribute : featureType.getTypes()) {
       // TODO: change this check from the_geom to the binding class's name
-      if( "the_geom".equalsIgnoreCase(attribute.getName().toString()) ){
+      if ("the_geom".equalsIgnoreCase(attribute.getName().toString())) {
         continue;
       }
 
       // add this attribute to the fields json
-      fieldJsonBuilder.object();
-      fieldJsonBuilder.key("name").value(attribute.getName());
-      fieldJsonBuilder.key("type").value(attribute.getBinding().getSimpleName());
-      fieldJsonBuilder.endObject();
+      addAttributeToFieldsJson(fieldJsonBuilder, attribute);
 
       // add this attribute to the columns json
-      columnJsonBuilder.object();
-      columnJsonBuilder.key("dataIndex").value(attribute.getName());
-      columnJsonBuilder.key("header").value(attribute.getName());
-      columnJsonBuilder.key("sortable").value(true);
-      
-      String type = attribute.getBinding().getSimpleName();
-      String gridXtype = "gridcolumn";
-      String editorXtype = "textfield";
-      
-      if( !"string".equalsIgnoreCase(type) ) {
-        gridXtype = "numbercolumn";
-        editorXtype = "numberfield";
-      }
-
-      columnJsonBuilder.key("xtype").value(gridXtype);
-      columnJsonBuilder.key("editor").object().key("xtype").value(editorXtype).endObject();
-      
-      columnJsonBuilder.endObject();
-      
+      addAttributeToColumnsJson(columnJsonBuilder, attribute);
     }
 
     fieldJsonBuilder.endArray();
     columnJsonBuilder.endArray();
-    
+
     fieldStringWriter.flush();
     map.put("fieldsJson", fieldStringWriter.toString());
     columnStringWriter.flush();
@@ -180,11 +150,10 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
     // Get the wfs url
     map.put("wfsUrl",
             buildURL(
-              ((GetFeatureType)getFeature.getParameters()[0]).getBaseUrl(), 
-              "wfs", 
-              null, 
-              URLType.SERVICE)
-            );
+            ((GetFeatureType) getFeature.getParameters()[0]).getBaseUrl(),
+            "wfs",
+            null,
+            URLType.SERVICE));
 
     try {
       template.process(map, new OutputStreamWriter(output, Charset.forName("UTF-8")));
@@ -213,6 +182,68 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
 
     w.write("Test");
     w.flush();
+  }
+
+  /*
+   * returns a String that is a JSON of the featureCollection.
+   */
+  private String getFeaturesAsJson(FeatureCollectionType featureCollection, Operation getFeature) throws IOException {
+    ByteArrayOutputStream featureJsonStream = new ByteArrayOutputStream();
+    jsonFormatter.write(featureCollection, featureJsonStream, getFeature);
+    featureJsonStream.flush();
+    return featureJsonStream.toString();
+  }
+
+  /*
+   * Adds the attribute as an Ext Field to the JSON builder.
+   */
+  private GeoJSONBuilder addAttributeToFieldsJson(GeoJSONBuilder builder, AttributeType attribute) {
+    builder.object();
+    builder.key("name").value(attribute.getName());
+    builder.key("type").value(attribute.getBinding().getSimpleName());
+    builder.endObject();
+    return builder;
+  }
+
+  /*
+   * Adds the attribute as an Ext ColumnModel to the JSON builder.
+   */
+  private GeoJSONBuilder addAttributeToColumnsJson(GeoJSONBuilder builder, AttributeType attribute) {
+    builder.object();
+    builder.key("dataIndex").value(attribute.getName());
+    builder.key("header").value(attribute.getName());
+    builder.key("sortable").value(true);
+
+    String type = attribute.getBinding().getSimpleName();
+    String gridXtype = "gridcolumn";
+    String editorXtype = "textfield";
+
+    if (!"string".equalsIgnoreCase(type)) {
+      gridXtype = "numbercolumn";
+      editorXtype = "numberfield";
+    }
+
+    builder.key("xtype").value(gridXtype);
+    builder.key("editor").object().key("xtype").value(editorXtype).endObject();
+
+    builder.endObject();
+    return builder;
+  }
+
+  private boolean isGeometryAttribute(AttributeType attribute) {
+    return false;
+  }
+
+  /*
+   * returns String that is geometry column's name quoted or null
+   * Used by OpenLayers' WFS Protocol
+   */
+  private String getGeometryColumnName(SimpleFeatureType featureType) {
+    if (null != featureType.getGeometryDescriptor()) {
+      return '"' + featureType.getGeometryDescriptor().getName().getLocalPart() + '"';
+    } else {
+      return "null";
+    }
   }
 
   @Override

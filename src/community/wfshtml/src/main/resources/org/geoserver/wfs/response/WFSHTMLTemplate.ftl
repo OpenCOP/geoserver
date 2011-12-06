@@ -27,7 +27,7 @@
 
 
     <script type="text/javascript">
-      var getFeatureJson = ${getFeatureJson};
+      var featureJson = ${featureJson};
       var fieldsJson = ${fieldsJson};
       var columnsJson = ${columnsJson};
 
@@ -54,7 +54,7 @@
         map.addLayers([wmsLayer, vectorLayer]);
 
         var reader = new OpenLayers.Format.GeoJSON();
-        var vecs = reader.read(getFeatureJson);
+        var vecs = reader.read(featureJson);
         vectorLayer.addFeatures(vecs);
 
         // create map panel
