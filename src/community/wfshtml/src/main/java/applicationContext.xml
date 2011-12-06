@@ -5,6 +5,5 @@
   <bean id="HTMLOutputFormat" class="org.geoserver.wfs.response.HTMLOutputFormat">
     <constructor-arg ref="geoServer"/>
     <constructor-arg ref="geojsonOutputFormat"/>
-    <constructor-arg ref="gml3OutputFormat"/>
   </bean>
 </beans>

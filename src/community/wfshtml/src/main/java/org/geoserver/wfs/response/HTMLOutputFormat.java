@@ -1,12 +1,6 @@
 package org.geoserver.wfs.response;
 
-/* Copyright (c) 2001 - 2007 TOPP - www.openplans.org.  All rights reserved.
- * This code is licensed under the GPL 2.0 license, availible at the root
- * application directory.
- */
-
 import static org.geoserver.ows.util.ResponseUtils.buildURL;
-
 
 import freemarker.ext.beans.BeansWrapper;
 import freemarker.template.Configuration;
@@ -17,18 +11,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-
-
 import java.io.StringWriter;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.opengis.wfs.FeatureCollectionType;
 import net.opengis.wfs.GetFeatureType;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.geoserver.config.GeoServer;
 import org.geoserver.ows.URLMangler.URLType;
 import org.geoserver.platform.Operation;
@@ -36,19 +24,12 @@ import org.geoserver.platform.ServiceException;
 import org.geoserver.wfs.WFSGetFeatureOutputFormat;
 import org.geoserver.wfs.request.FeatureCollectionResponse;
 import org.geoserver.wfs.request.GetFeatureRequest;
-import org.geoserver.wfs.xml.GML3OutputFormat;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeType;
 
 /**
- * WFS output format for a GetFeature operation in which the outputFormat is "csv".
- * The refence specification for this format can be found in this RFC:
- * http://www.rfc-editor.org/rfc/rfc4180.txt
- *
- * @author Justin Deoliveira, OpenGeo, jdeolive@opengeo.org
- * @author Sebastian Benthall, OpenGeo, seb@opengeo.org
- * @author Andrea Aime, OpenGeo
+ * WFS output format for a GetFeature operation in which the outputFormat is "html".
  */
 public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
 
@@ -66,7 +47,6 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
   }
 
   private GeoJSONOutputFormat jsonFormatter;
-  private GML3OutputFormat gmlFormatter;
 
   public HTMLOutputFormat(GeoServer gs) {
     //this is the name of your output format, it is the string
@@ -76,14 +56,13 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
     super(gs, "html");
   }
 
-  public HTMLOutputFormat(GeoServer gs, GeoJSONOutputFormat json, GML3OutputFormat gml) {
+  public HTMLOutputFormat(GeoServer gs, GeoJSONOutputFormat json) {
     this(gs);
     jsonFormatter = json;
-    gmlFormatter = gml;
   }
 
   /**
-   * @return "text/csv";
+   * @return "text/html";
    */
   @Override
   public String getMimeType(Object value, Operation operation)
@@ -106,7 +85,8 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
   }
 
   /**
-   * 2.1
+   * Version of write function used in GeoServer 2.1
+   * 
    * @param featureCollection
    * @param output
    * @param getFeature
@@ -130,19 +110,18 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
 //    } else {
 //      map.put("layerName", "GeoServer Layers");
 //    }
+//      featureType.getGeometryDescriptor().getName().getLocalPart()
+      String geometryName = "null";
+      
+      if( null != featureType.getGeometryDescriptor() ) {
+        geometryName = '"' + featureType.getGeometryDescriptor().getName().getLocalPart() + '"';
+      }
+      map.put("geometryName", geometryName);
 
     // Get the features JSON
     ByteArrayOutputStream featureJsonStream = new ByteArrayOutputStream();
     jsonFormatter.write(featureCollection, featureJsonStream, getFeature);
     map.put("getFeatureJson", featureJsonStream.toString());
-    
-    // Get the features GML
-    ByteArrayOutputStream featureGmlStream = new ByteArrayOutputStream();
-    gmlFormatter.write(featureCollection, featureGmlStream, getFeature);
-    String getFeatureGml = featureGmlStream.toString(); //StringEscapeUtils.escapeHtml(featureGmlStream.toString());
-//    map.put("getFeatureGml", getFeatureGml);
-
-//            GetFeatureRequest request = GetFeatureRequest.adapt(getFeature.getParameters()[0]);
 
     // get the fields and columns JSONs
     List<AttributeType> attributes = featureType.getTypes();
@@ -157,10 +136,11 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
     columnJsonBuilder.array();
 
     for( AttributeType attribute : attributes ) {
+      // TODO: change this check from the_geom to the binding class's name
       if( "the_geom".equalsIgnoreCase(attribute.getName().toString()) ){
         continue;
       }
-              
+
       // add this attribute to the fields json
       fieldJsonBuilder.object();
       fieldJsonBuilder.key("name").value(attribute.getName());
@@ -197,7 +177,6 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
     columnStringWriter.flush();
     map.put("columnsJson", columnStringWriter.toString());
 
-
     // Get the wfs url
     map.put("wfsUrl",
             buildURL(
@@ -206,23 +185,22 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
               null, 
               URLType.SERVICE)
             );
-    
 
     try {
-      //            ByteArrayOutputStream buff = new ByteArrayOutputStream();
       template.process(map, new OutputStreamWriter(output, Charset.forName("UTF-8")));
-      //create a writer
-      //    BufferedWriter w = new BufferedWriter(new OutputStreamWriter(output));
-      //
-      //    w.flush();
     } catch (TemplateException ex) {
       throw new ServiceException(ex);
     }
   }
 
   /**
-   * 2.2
-   * @see WFSGetFeatureOutputFormat#write(Object, OutputStream, Operation)
+   * Version of write function used in GeoServer 2.2
+   * 
+   * @param featureCollection
+   * @param output
+   * @param getFeature
+   * @throws IOException
+   * @throws ServiceException 
    */
   @Override
   protected void write(FeatureCollectionResponse featureCollection,
@@ -233,97 +211,10 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
     //create a writer
     BufferedWriter w = new BufferedWriter(new OutputStreamWriter(output));
 
-    w.write("Booyah");
-
-//        //get the feature collection
-//        SimpleFeatureCollection fc = 
-//            (SimpleFeatureCollection) featureCollection.getFeature().get(0);
-
-
-//        //write out the header
-//        SimpleFeatureType ft = fc.getSchema();
-//        w.write("FID,");
-//        for ( int i = 0; i < ft.getAttributeCount(); i++ ) {
-//            AttributeDescriptor ad = ft.getDescriptor( i );
-//            w.write( prepCSVField(ad.getLocalName()) );
-//               
-//            if ( i < ft.getAttributeCount()-1 ) {
-//               w.write( "," );
-//            }
-//        }
-//        // by RFC each line is terminated by CRLF
-//        w.write( "\r\n" );
-//        
-//        // prepare the formatter for numbers
-//        NumberFormat coordFormatter = NumberFormat.getInstance(Locale.US);
-//        coordFormatter.setMaximumFractionDigits(getInfo().getGeoServer().getGlobal().getNumDecimals());
-//        coordFormatter.setGroupingUsed(false);
-//           
-//        //write out the features
-//        SimpleFeatureIterator i = fc.features();
-//        try {
-//            while( i.hasNext() ) {
-//                SimpleFeature f = i.next();
-//                // dump fid
-//                w.write(prepCSVField(f.getID()));
-//                w.write(",");
-//                // dump attributes
-//                for ( int j = 0; j < f.getAttributeCount(); j++ ) {
-//                    Object att = f.getAttribute( j );
-//                    if ( att != null ) {
-//                        String value = null;
-//                        if(att instanceof Number) {
-//                            // don't allow scientific notation in the output, as OpenOffice won't 
-//                            // recognize that as a number 
-//                            value = coordFormatter.format(att);
-//                        } else if(att instanceof Date) {
-//                            // serialize dates in ISO format
-//                            if(att instanceof java.sql.Date)
-//                                value = DateUtil.serializeSqlDate((java.sql.Date) att);
-//                            else if(att instanceof java.sql.Time)
-//                                value = DateUtil.serializeSqlTime((java.sql.Time) att);
-//                            else
-//                                value = DateUtil.serializeDateTime((Date) att);
-//                        } else {
-//                            // everything else we just "toString"
-//                            value = att.toString();
-//                        }
-//                        w.write( prepCSVField(value) );
-//                    }
-//                    if ( j < f.getAttributeCount()-1 ) {
-//                        w.write(",");    
-//                    }
-//                }
-//                // by RFC each line is terminated by CRLF
-//                w.write( "\r\n" );
-//            }
-//        } finally {
-//            fc.close( i );
-//        }
-
+    w.write("Test");
     w.flush();
   }
 
-  /*
-   * The CSV "spec" explains that fields with certain properties must be
-   * delimited by double quotes, and also that double quotes within fields
-   * must be escaped.  This method takes a field and returns one that
-   * obeys the CSV spec.
-   */
-//    private String prepCSVField(String field){
-//    	// "embedded double-quote characters must be represented by a pair of double-quote characters."
-//    	String mod = field.replaceAll("\"", "\"\"");
-//    	
-//    	/*
-//    	 * Enclose string in double quotes if it contains double quotes, commas, or newlines
-//    	 */
-//    	if(mod.matches(".*(\"|\n|,).*")){
-//    		mod = "\"" + mod + "\"";
-//    	}
-//    	
-//		return mod;
-//    	
-//    }
   @Override
   public String getCapabilitiesElementName() {
     return "HTML";
