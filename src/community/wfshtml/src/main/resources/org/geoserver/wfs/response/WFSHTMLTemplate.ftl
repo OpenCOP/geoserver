@@ -73,6 +73,14 @@
           layer: vectorLayer,
           fields: fieldsJson,
           autoLoad: false,
+
+          featureFilter: new OpenLayers.Filter({
+            evaluate: function(feature) {
+              // Don't want deleted features showing up in the store.
+              return feature.state != OpenLayers.State.DELETE
+            }
+          }),
+
           proxy: new GeoExt.data.ProtocolProxy({
             protocol: new OpenLayers.Protocol.WFS({
               url: "${wfsUrl}", 
@@ -97,6 +105,23 @@
           store: featureStore,
           columns: columnsJson,
           bbar: [{
+            text: "Delete",
+            handler: function() {
+
+              app.feature_table.getSelectionModel().each(function(rec) {
+                var feature = rec.getFeature();
+                vectorLayer.removeFeatures([feature]);
+                if (feature.state != OpenLayers.State.INSERT) {
+                  // Set the state to DELETE
+                  feature.state = OpenLayers.State.DELETE;
+                  // add the deleted feature back to the layer (will not render)
+                  vectorLayer.addFeatures([feature]);
+                }
+              });
+
+            }
+          },
+          {
             text: "Save",
             handler: saveVectorLayer
           }]
@@ -115,7 +140,7 @@
           // state to reflect that
           Ext.each(vectorLayer.features, function(n) {
             if (!n.state && !equalAttributes(n.data, n.attributes)) {
-              n.state = "Update";
+              n.state = OpenLayers.State.UPDATE;
             }
           })
 
