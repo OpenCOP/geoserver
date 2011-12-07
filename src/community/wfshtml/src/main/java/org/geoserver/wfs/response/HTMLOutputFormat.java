@@ -207,6 +207,8 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
 
   /*
    * Adds the attribute as an Ext ColumnModel to the JSON builder.
+   * 
+   * TODO: Needs to handle all types.
    */
   private GeoJSONBuilder addAttributeToColumnsJson(GeoJSONBuilder builder, AttributeType attribute) {
     builder.object();
@@ -215,12 +217,15 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
     builder.key("sortable").value(true);
 
     String type = attribute.getBinding().getSimpleName();
-    String gridXtype = "gridcolumn";
-    String editorXtype = "textfield";
+    String gridXtype = "numbercolumn";
+    String editorXtype = "numberfield";
 
-    if (!"string".equalsIgnoreCase(type)) {
-      gridXtype = "numbercolumn";
-      editorXtype = "numberfield";
+    if ("timestamp".equalsIgnoreCase(type)) {
+      gridXtype = "gridcolumn";
+      editorXtype = "textfield";
+    } else if ("string".equalsIgnoreCase(type)) {
+      gridXtype = "gridcolumn";
+      editorXtype = "textfield";
     }
 
     builder.key("xtype").value(gridXtype);

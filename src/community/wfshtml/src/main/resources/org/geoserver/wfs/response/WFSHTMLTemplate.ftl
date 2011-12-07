@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <title>WFS GetFeature Response</title>
 <!-- 
@@ -16,7 +14,8 @@
     <script src="/EOC/ext-3.4.0/adapter/ext/ext-base.js" type="text/javascript"></script>
     <script type="text/javascript" src="http://extjs.cachefly.net/ext-3.4.0/ext-all-debug.js"></script>
  <!--   <script src="/EOC/ext-3.4.0/ext-all.js" type="text/javascript"></script>
- -->   <script src="/EOC/js/lib/OpenLayers.js" type="text/javascript"></script>
+ -->
+    <script src="/EOC/js/lib/OpenLayers.js" type="text/javascript"></script>
     <script src="/EOC/GeoExt/lib/GeoExt.js" type="text/javascript"></script>    
     <link rel="stylesheet" type="text/css" href="/EOC/GeoExt/resources/css/geoext-all-debug.css"></link>
     <link rel="stylesheet" type="text/css" href="/EOC/GeoExt/resources/css/popup.css">
@@ -60,8 +59,8 @@
         // create map panel
         mapPanel = new GeoExt.MapPanel({
           title: "Map",
-          region: "south",
-          height: 400,
+          region: "center",
+          height: 300,
           //width: 600,
           map: map,
           center: new OpenLayers.LonLat(-90, 30),
@@ -99,13 +98,22 @@
           ref: "feature_table",
           title: "${layerName}",
           iconCls: 'silk_table_find',
-          region: "center",
+          region: "north",
           height: 300,
           sm: new GeoExt.grid.FeatureSelectionModel(),
           store: featureStore,
           columns: columnsJson,
-          bbar: [{
+          bbar: [
+            new GeoExt.Action({
+              text: "Create",
+              iconCls: "silk_table_add",
+              enableToggle: true,
+              map: map,
+              control: new OpenLayers.Control.DrawFeature(vectorLayer, OpenLayers.Handler.Point)
+          }),
+          {
             text: "Delete",
+            iconCls: "silk_table_delete",
             handler: function() {
 
               app.feature_table.getSelectionModel().each(function(rec) {
@@ -123,6 +131,7 @@
           },
           {
             text: "Save",
+            iconCls: "silk_table_save",
             handler: saveVectorLayer
           }]
         }
