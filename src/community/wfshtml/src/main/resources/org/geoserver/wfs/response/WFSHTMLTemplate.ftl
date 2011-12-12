@@ -10,16 +10,20 @@
     <script type="text/javascript" src="http://api.geoext.org/1.0/script/GeoExt.js"></script>
  -->
 
-<!-- -->
+    <!-- Ext includes -->
     <script src="/EOC/ext-3.4.0/adapter/ext/ext-base.js" type="text/javascript"></script>
     <script type="text/javascript" src="http://extjs.cachefly.net/ext-3.4.0/ext-all-debug.js"></script>
+    <link rel="stylesheet" type="text/css" href="/EOC/ext-3.4.0/resources/css/ext-all.css" />
  <!--   <script src="/EOC/ext-3.4.0/ext-all.js" type="text/javascript"></script>
  -->
+    <!-- OpenLayers includes -->
     <script src="/EOC/js/lib/OpenLayers.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="/EOC/js/lib/theme/default/style.css"/>
+
+    <!-- GeoExt includes -->
     <script src="/EOC/GeoExt/lib/GeoExt.js" type="text/javascript"></script>    
-    <link rel="stylesheet" type="text/css" href="/EOC/GeoExt/resources/css/geoext-all-debug.css"></link>
-    <link rel="stylesheet" type="text/css" href="/EOC/GeoExt/resources/css/popup.css">
-    <link rel="stylesheet" type="text/css" href="/EOC/ext-3.4.0/resources/css/ext-all.css"></link>
+    <link rel="stylesheet" type="text/css" href="/EOC/GeoExt/resources/css/geoext-all-debug.css" />
+    <link rel="stylesheet" type="text/css" href="/EOC/GeoExt/resources/css/popup.css" />
     <link rel="stylesheet" type="text/css" href="/EOC/css/silk.css">
     <link rel="stylesheet" type="text/css" href="/EOC/css/geosilk.css">
 <!-- -->
@@ -62,9 +66,7 @@
           region: "center",
           height: 300,
           //width: 600,
-          map: map,
-          center: new OpenLayers.LonLat(-90, 30),
-          zoom: 6
+          map: map
         });
 
         // create feature store, binding it to the vector layer
@@ -168,6 +170,18 @@
             }
           );
         }
+
+        // Putting this down here, seems to need to happen after something.
+        // So its after everything.
+        map.zoomToExtent(
+          new OpenLayers.Bounds(
+            ${minX?c}, 
+            ${minY?c},
+            ${maxX?c}, 
+            ${maxY?c}
+          ), 
+          true
+        );
 
     }); // end Ext.onReady()
 

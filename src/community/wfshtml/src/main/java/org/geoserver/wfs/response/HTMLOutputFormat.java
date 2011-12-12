@@ -24,8 +24,12 @@ import org.geoserver.wfs.WFSGetFeatureOutputFormat;
 import org.geoserver.wfs.request.FeatureCollectionResponse;
 import org.geoserver.wfs.request.GetFeatureRequest;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeType;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.operation.TransformException;
 
 /**
  * WFS output format for a GetFeature operation in which the outputFormat is "html".
@@ -93,7 +97,9 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
    */
   protected void write(FeatureCollectionType featureCollection,
           OutputStream output, Operation getFeature) throws IOException,
-          ServiceException {
+          ServiceException, 
+          TransformException, 
+          FactoryException {
 
     Template template = cfg.getTemplate("WFSHTMLTemplate.ftl");
     template.setOutputEncoding("UTF-8");
@@ -101,10 +107,16 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
 
     // Get the layer name
 //    if (featureCollection.getFeature().size() == 1) {
+    // Only getting Layer Name and such from the first layer (if more they are silently ignored)
     SimpleFeatureCollection features = (SimpleFeatureCollection) featureCollection.getFeature().get(0);
     SimpleFeatureType featureType = features.getSchema();
     map.put("layerName", featureType.getName().getLocalPart());
     map.put("layerNS", featureType.getName().getNamespaceURI());
+    ReferencedEnvelope coord = features.getBounds().transform(DefaultGeographicCRS.WGS84, true);
+    map.put("minX", coord.getMinX());
+    map.put("minY", coord.getMinY());
+    map.put("maxX", coord.getMaxX());
+    map.put("maxY", coord.getMaxY());
 //    } else {
 //      map.put("layerName", "GeoServer Layers");
 //    }
