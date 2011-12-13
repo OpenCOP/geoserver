@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- =======================================================================    
+        Maven Project Configuration File                                        
+                                                                                
+        The Geotools Project                                                    
+            http://www.geotools.org/                                            
+                                                                                
+        Version: $Id: pom.xml 37473 2011-06-22 05:17:08Z jive $              
+     ======================================================================= -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+           xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                               http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+<!--  <parent>
+    <groupId>org.geotools</groupId>
+    <artifactId>plugin</artifactId>
+    <version>2.7.2</version>
+  </parent>-->
+
+
+  <!-- =========================================================== -->
+  <!--     Module Description                                      -->
+  <!-- =========================================================== -->
+    <groupId>com.geocent</groupId>
+    <artifactId>geonetcdf</artifactId>
+    <packaging>jar</packaging>
+    <version>2.7.2</version>
+    <name>Geocent NetCDF coverage module</name>
+  
+
+<!-- =========================================================== -->
+  <!--     Build Configuration                                     -->
+  <!-- =========================================================== -->
+    <build>
+
+    <!-- ========================================================= -->
+    <!--   Maven plugins dependencies management.                  -->
+    <!--   It should not be needed since Maven select by default   -->
+    <!--   the latest plugins. Unfortunatly, experience shows that -->
+    <!--   new plugin releases sometime introduce new bugs that    -->
+    <!--   break our build. So it is saferto specify plugin        -->
+    <!--   versions that are known to work.  This list is in       -->
+    <!--   alphabetical order for easier comparaison with latest   -->
+    <!--   plugins at                                              -->
+    <!--   http://repo1.maven.org/maven2                           -->
+    <!-- ========================================================= -->
+<!--        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-eclipse-plugin</artifactId>
+                    <version>2.5</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-webdav</artifactId>
+                <version>1.0-beta-2</version>
+            </extension>
+        </extensions>-->
+
+
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.3</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/libs</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+      
+            <plugin>
+          <!-- groupId org.apache.maven.plugins is the default -->
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>build/maven/assembly/binaryDist.xml</descriptor>
+                        <descriptor>build/maven/assembly/sourceDist.xml</descriptor>
+                        <descriptor>build/maven/assembly/userDocDist.xml</descriptor>
+                    </descriptors>
+                </configuration>
+            </plugin>
+
+      <!-- ======================================================= -->
+      <!--     Compilation.                                        -->
+      <!-- ======================================================= -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.5</source>  <!-- The -source argument for the Java compiler. -->
+                    <target>1.5</target>  <!-- The -target argument for the Java compiler. -->
+                    <debug>true</debug>   <!-- Whether to include debugging information.   -->
+                    <encoding>UTF-8</encoding> <!-- The -encoding argument for the Java compiler. -->
+          <!-- 
+               On java6 the build oom's otherwise due to the compiler accumulating
+               too many classes in the permanent generation, see GEOT-2462  
+          -->
+                    <fork>true</fork> 
+                </configuration>
+            </plugin>
+
+
+
+      <!-- ======================================================= -->
+      <!--     Resources.                                          -->
+      <!-- ======================================================= -->
+<!--      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <configuration>
+          <encoding>UTF-8</encoding>
+        </configuration>
+      </plugin>-->
+
+<!--      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <inherited>false</inherited>
+        <executions>
+          <execution>
+             <id>copy-resources</id>
+             <phase>install</phase>
+             <goals>
+               <goal>copy-resources</goal>
+             </goals>
+           </execution>
+        </executions>
+        <configuration>
+          <encoding>UTF-8</encoding>
+          <outputDirectory>${basedir}/target</outputDirectory>
+          <resources>
+            <resource>
+              <filtering>true</filtering>
+              <directory>${basedir}</directory>
+              <includes>
+                <include>VERSION.txt</include>
+              </includes>
+           </resource>
+         </resources>
+        </configuration>
+      </plugin>-->
+
+      <!-- ======================================================= -->
+      <!--     Tests.                                              -->
+      <!-- ======================================================= -->
+<!--      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>**/*Test.java</include>
+          </includes>
+          <excludes>
+            <exclude>${online.skip.pattern}</exclude>
+            <exclude>${stress.skip.pattern}</exclude>
+            <exclude>${test.exclude.pattern}</exclude>
+          </excludes>
+          <argLine>-Xmx${test.maxHeapSize} ${jvm.opts} -Dorg.geotools.test.extensive=${extensive.tests} -Dorg.geotools.test.interactive=${interactive.tests} -Dorg.geotools.image.test.interactive=${interactive.image} -Djava.awt.headless=${java.awt.headless} -Djava.io.tmpdir=${java.io.tmpdir}</argLine>
+           Ignores test failure only if we are generating a       
+           report for publication on the web site. See the        
+           profiles section at the begining of this pom.xml file. 
+          <testFailureIgnore>
+            ${allow.test.failure.ignore}
+          </testFailureIgnore>
+
+           The two following options have the opposite value of what we would
+               like. They are that way because they don't seem to work as expected
+               with Surefire 2.3. TODO: Try again when Surefire 2.4 will be available. 
+
+           Option to print summary of test suites or just print the test cases that has errors. 
+          <printSummary>true</printSummary>
+           Redirect the unit test standard output to a file. 
+          <redirectTestOutputToFile>false</redirectTestOutputToFile>
+        </configuration>
+      </plugin>-->
+
+      <!-- ======================================================= -->
+      <!--     JAR packaging.                                      -->
+      <!-- ======================================================= -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                        </manifest>
+                        <manifestEntries>
+                            <Project-Version>${project.version}</Project-Version>
+                            <Svn-Revision>${build.revision}</Svn-Revision>
+                            <Build-Timestamp>${build.timestamp}</Build-Timestamp>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+
+
+
+      <!-- ======================================================= -->
+      <!--     Source packaging.                                      -->
+      <!-- ======================================================= -->
+            <plugin>
+                <inherited>true</inherited>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <configuration>
+                    <attach>true</attach>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+
+      
+      
+        </plugins>
+    </build>
+  <!-- =========================================================== -->
+  <!--     Dependency Management                                   -->
+  <!-- =========================================================== -->  
+    <repositories>
+        <repository>
+            <id>org.geotools</id>
+            <name>GeoTools</name>
+            <url>http://download.osgeo.org/webdav/geotools/</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
+  
+    <dependencies>
+<!--    from netcdf land-->
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-coverageio</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>netcdf</artifactId>
+            <version>2.2.22</version>
+        </dependency>
+
+    
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-coverage</artifactId>
+            <version>2.7.3</version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
+  
+    <profiles>
+        <profile>
+            <id>deploy</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+<!--                   <delete file="${project.build.outputDirectory}/environment.properties"/>-->
+                                        <copy file="target/geonetcdf-2.7.2.jar"
+                         tofile="${tomcat_geoserver_lib}/geonetcdf-2.7.2.jar"/>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    
+    </profiles>
+
+    <properties>
+        <tomcat_webapp_dir>/Users/dlatil/apps/apache-tomcat-6.0.26/webapps</tomcat_webapp_dir>
+        <tomcat_geoserver_lib>/Users/dlatil/apps/apache-tomcat-6.0.26/webapps/geoserver/WEB-INF/lib</tomcat_geoserver_lib>
+    </properties>
+</project>
