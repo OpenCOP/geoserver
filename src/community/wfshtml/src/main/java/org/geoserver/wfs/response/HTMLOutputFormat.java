@@ -122,8 +122,9 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
 //    }
 //      featureType.getGeometryDescriptor().getName().getLocalPart()
 
-    // Get the geometry column's name
+    // Get the geometry column's name and type
     map.put("geometryName", getGeometryColumnName(featureType));
+    map.put("geometryType", getGeometryColumnType(featureType));
 
     // Get the features JSON
     map.put("featureJson", getFeaturesAsJson(featureCollection, getFeature));
@@ -260,6 +261,14 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
       return '"' + featureType.getGeometryDescriptor().getName().getLocalPart() + '"';
     } else {
       return "null";
+    }
+  }
+  
+  private String getGeometryColumnType(SimpleFeatureType featureType) {
+    if (null != featureType.getGeometryDescriptor()) {
+      return featureType.getGeometryDescriptor().getType().getBinding().getSimpleName();
+    } else {
+      return null;
     }
   }
 

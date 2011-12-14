@@ -11,21 +11,21 @@
  -->
 
     <!-- Ext includes -->
-    <script src="/EOC/ext-3.4.0/adapter/ext/ext-base.js" type="text/javascript"></script>
-    <script type="text/javascript" src="http://extjs.cachefly.net/ext-3.4.0/ext-all-debug.js"></script>
-    <link rel="stylesheet" type="text/css" href="/EOC/ext-3.4.0/resources/css/ext-all.css" />
- <!--   <script src="/EOC/ext-3.4.0/ext-all.js" type="text/javascript"></script>
- -->
+    <script src="/geoserver/lib/ext-3.4.0/adapter/ext/ext-base.js" type="text/javascript"></script>
+<!--    <script type="text/javascript" src="http://extjs.cachefly.net/ext-3.4.0/ext-all-debug.js"></script>-->
+    <script src="/geoserver/lib/ext-3.4.0/ext-all.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="/geoserver/lib/ext-3.4.0/resources/css/ext-all.css" />
+ 
     <!-- OpenLayers includes -->
-    <script src="/EOC/js/lib/OpenLayers.js" type="text/javascript"></script>
-    <link rel="stylesheet" type="text/css" href="/EOC/js/lib/theme/default/style.css"/>
+    <script src="/geoserver/lib/openlayers/OpenLayers.js" type="text/javascript"></script>
+<!--    <link rel="stylesheet" type="text/css" href="/EOC/theme/default/style.css"/>-->
 
     <!-- GeoExt includes -->
-    <script src="/EOC/GeoExt/lib/GeoExt.js" type="text/javascript"></script>    
-    <link rel="stylesheet" type="text/css" href="/EOC/GeoExt/resources/css/geoext-all-debug.css" />
-    <link rel="stylesheet" type="text/css" href="/EOC/GeoExt/resources/css/popup.css" />
-    <link rel="stylesheet" type="text/css" href="/EOC/css/silk.css">
-    <link rel="stylesheet" type="text/css" href="/EOC/css/geosilk.css">
+    <script src="/geoserver/lib/GeoExt/lib/GeoExt.js" type="text/javascript"></script>    
+    <link rel="stylesheet" type="text/css" href="/geoserver/lib/GeoExt/resources/css/geoext-all-debug.css" />
+    <link rel="stylesheet" type="text/css" href="/geoserver/lib/GeoExt/resources/css/popup.css" />
+    <link rel="stylesheet" type="text/css" href="/geoserver/lib/css/silk.css">
+    <link rel="stylesheet" type="text/css" href="/geoserver/lib/css/geosilk.css">
 <!-- -->
 
 
@@ -45,16 +45,25 @@
 
       Ext.onReady(function() {
         // create map instance
-        map = new OpenLayers.Map();
-        var wmsLayer = new OpenLayers.Layer.WMS(
-          "vmap0",
+        // If you create a map without specifying controls, it creates 
+        // with default controls that use images that don't exist.
+        // So, I'm manually specifying them so they'll use the correct images.
+        map = new OpenLayers.Map({
+          controls: [new OpenLayers.Control.Navigation(),
+            new OpenLayers.Control.Attribution(),
+            new OpenLayers.Control.PanPanel(),
+            new OpenLayers.Control.ZoomPanel() ]
+        });
+        
+        var baseLayer = new OpenLayers.Layer.WMS(
+          "Base Layer",
           "http://vmap0.tiles.osgeo.org/wms/vmap0",
           {layers: 'basic'}
         );
 
         // create vector layer
-        var vectorLayer = new OpenLayers.Layer.Vector("${layerName}");
-        map.addLayers([wmsLayer, vectorLayer]);
+        var vectorLayer = new OpenLayers.Layer.Vector("${layerName?js_string}");
+        map.addLayers([baseLayer, vectorLayer]);
 
         var reader = new OpenLayers.Format.GeoJSON();
         var vecs = reader.read(featureJson);
@@ -86,8 +95,8 @@
             protocol: new OpenLayers.Protocol.WFS({
               url: "${wfsUrl}", 
               version: "1.1.0",
-              featureType: "${layerName}", 
-              featureNS: "${layerNS}", 
+              featureType: "${layerName?js_string}", 
+              featureNS: "${layerNS?js_string}", 
               srsName: "EPSG:4326", //"EPSG:900913",
               geometryName: ${geometryName},
               maxFeatures: 250
@@ -95,10 +104,50 @@
           })
         });
 
+        // Either there is geometry and the user should be able to draw it
+        // when creating.
+        // Or the layer is aspatial and just add a feature to the grid.
+        <#if geometryType?? >
+        var createButton = new GeoExt.Action({
+              text: "Create",
+              iconCls: "silk_table_add",
+              enableToggle: true,
+              map: map,
+              control: getDrawControl()
+          });
+          
+        function getDrawControl() {
+          var gt = "${(geometryType!"")?js_string}";
+          var handler = null;
+          if( gt.match(/Line/i) ) {
+            handler = "Path";
+          } else if( gt.match(/Polygon/i) ) {
+            handler = "Polygon";
+          } else if( gt.match(/Point/i) ) {
+            var handler = "Point";
+          }
+          if( null != handler ) {
+            return new OpenLayers.Control.DrawFeature(vectorLayer, OpenLayers.Handler[handler]);
+          } else {
+            return null;
+          }
+        }
+
+        <#else>
+        var createButton = {
+              text: "Create",
+              iconCls: "silk_table_add",
+              handler: function() {
+                var feature = new OpenLayers.Feature.Vector();
+                feature.state = OpenLayers.State.INSERT;
+                vectorLayer.addFeatures([feature]);
+              }};
+        </#if>
+
         var feature_table = {
           xtype: "editorgrid",
           ref: "feature_table",
-          title: "${layerName}",
+          title: "${layerName?js_string}",
           iconCls: 'silk_table_find',
           region: "north",
           height: 300,
@@ -106,13 +155,7 @@
           store: featureStore,
           columns: columnsJson,
           bbar: [
-            new GeoExt.Action({
-              text: "Create",
-              iconCls: "silk_table_add",
-              enableToggle: true,
-              map: map,
-              control: new OpenLayers.Control.DrawFeature(vectorLayer, OpenLayers.Handler.Point)
-          }),
+            createButton,
           {
             text: "Delete",
             iconCls: "silk_table_delete",
