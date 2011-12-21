@@ -64,10 +64,13 @@
         // create vector layer
         var vectorLayer = new OpenLayers.Layer.Vector("${layerName?js_string}");
         map.addLayers([baseLayer, vectorLayer]);
+        loadData();
 
-        var reader = new OpenLayers.Format.GeoJSON();
-        var vecs = reader.read(featureJson);
-        vectorLayer.addFeatures(vecs);
+        function loadData() {
+          var reader = new OpenLayers.Format.GeoJSON();
+          var vecs = reader.read(featureJson);
+          vectorLayer.addFeatures(vecs);
+        }
 
         // create map panel
         mapPanel = new GeoExt.MapPanel({
@@ -109,7 +112,7 @@
         // Or the layer is aspatial and just add a feature to the grid.
         <#if geometryType?? >
         var createButton = new GeoExt.Action({
-              text: "Create",
+              text: "Create Feature",
               iconCls: "silk_table_add",
               enableToggle: true,
               map: map,
@@ -135,7 +138,7 @@
 
         <#else>
         var createButton = {
-              text: "Create",
+              text: "Create Feature",
               iconCls: "silk_table_add",
               handler: function() {
                 var feature = new OpenLayers.Feature.Vector();
@@ -144,6 +147,34 @@
               }};
         </#if>
 
+        // Select Model links the grid and the map together.
+        // Defining it explicitly so the modifyFeature control can use its
+        // selectFeature control.
+        var modControl = new OpenLayers.Control.ModifyFeature(vectorLayer,{standalone:true});
+        map.addControl(modControl);
+        var selModel = new GeoExt.grid.FeatureSelectionModel();
+        
+        var editButton = new Ext.Button({
+              text: "Move Feature",
+              iconCls: "silk_table_edit",
+              enableToggle: true,
+              disabled: true,
+              toggleHandler: function(button, state) {
+                if( true === state ) {
+                  var feature = selModel.selectControl.layer.selectedFeatures[0];
+                  if( feature && undefined !== feature && null !== feature ) {
+                    modControl.selectFeature(feature);
+                  }
+                  selModel.selectControl.multipleKey = null;
+                  selModel.singleSelect = true;
+                } else {
+                  modControl.unselectFeature();
+                  selModel.selectControl.multipleKey = "ctrlKey";
+                  selModel.singleSelect = false;
+                }
+              }
+          });
+
         var feature_table = {
           xtype: "editorgrid",
           ref: "feature_table",
@@ -151,13 +182,13 @@
           iconCls: 'silk_table_find',
           region: "north",
           height: 300,
-          sm: new GeoExt.grid.FeatureSelectionModel(),
+          sm: selModel,
           store: featureStore,
           columns: columnsJson,
           bbar: [
             createButton,
           {
-            text: "Delete",
+            text: "Delete Feature",
             iconCls: "silk_table_delete",
             handler: function() {
 
@@ -174,8 +205,18 @@
 
             }
           },
+            editButton,
           {
-            text: "Save",
+            text: "Undo Changes",
+            iconCls: "silk_arrow_undo",
+            handler: function() {
+              vectorLayer.removeAllFeatures();
+              editButton.toggle(false);
+              loadData();
+            }
+          },
+          {
+            text: "Save Changes",
             iconCls: "silk_table_save",
             handler: saveVectorLayer
           }]
@@ -204,15 +245,34 @@
             {
               callback: function() {
                 // refresh everything the user sees
-                var layers = app.map_panel.map.layers;
-                for (var i = layers.length - 1; i >= 0; --i) {
-                  layers[i].redraw(true);
-                }
-                app.feature_table.store.reload();
+                window.location.reload();
               }
             }
           );
         }
+
+        selModel.selectControl.onSelect = function(feature) {
+          if(editButton.pressed) {
+            modControl.selectFeature(feature);
+          } else {
+            if( feature.layer.selectedFeatures.length == 1 ) {
+              editButton.enable();
+            } else {
+              editButton.disable();
+            }
+          }
+        };        
+        selModel.selectControl.onUnselect = function(feature) {
+          if(editButton.pressed) {
+            modControl.unselectFeature(feature);
+          } else {
+            if( feature.layer.selectedFeatures.length == 1 ) {
+              editButton.enable();
+            } else {
+              editButton.disable();
+            }
+          }
+        };
 
         // Putting this down here, seems to need to happen after something.
         // So its after everything.
