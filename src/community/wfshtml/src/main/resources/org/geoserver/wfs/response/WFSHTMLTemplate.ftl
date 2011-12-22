@@ -1,46 +1,31 @@
 <html>
   <head>
     <title>WFS GetFeature Response</title>
-<!-- 
-    <script type="text/javascript" src="http://extjs.cachefly.net/ext-4.0.0/adapter/ext/ext-base.js"></script>
-    <script type="text/javascript" src="http://extjs.cachefly.net/ext-4.0.0/ext-all-debug.js"></script>
-    <link rel="stylesheet" type="text/css" href="http://extjs.cachefly.net/ext-4.0.0/resources/css/ext-all.css" />
-    <link rel="stylesheet" type="text/css" href="http://extjs.cachefly.net/ext-4.0.0/examples/shared/examples.css" />
-    <script src="http://www.openlayers.org/api/2.10/OpenLayers.js"></script>
-    <script type="text/javascript" src="http://api.geoext.org/1.0/script/GeoExt.js"></script>
- -->
 
-    <!-- Ext includes -->
+    <script src="/geoserver/lib/openlayers/OpenLayers.js" type="text/javascript"></script>
     <script src="/geoserver/lib/ext-3.4.0/adapter/ext/ext-base.js" type="text/javascript"></script>
 <!--    <script type="text/javascript" src="http://extjs.cachefly.net/ext-3.4.0/ext-all-debug.js"></script>-->
     <script src="/geoserver/lib/ext-3.4.0/ext-all.js" type="text/javascript"></script>
-    <link rel="stylesheet" type="text/css" href="/geoserver/lib/ext-3.4.0/resources/css/ext-all.css" />
- 
-    <!-- OpenLayers includes -->
-    <script src="/geoserver/lib/openlayers/OpenLayers.js" type="text/javascript"></script>
-<!--    <link rel="stylesheet" type="text/css" href="/EOC/theme/default/style.css"/>-->
+    <script src="/geoserver/lib/GeoExt/GeoExt.js" type="text/javascript"></script>    
 
-    <!-- GeoExt includes -->
-    <script src="/geoserver/lib/GeoExt/lib/GeoExt.js" type="text/javascript"></script>    
     <link rel="stylesheet" type="text/css" href="/geoserver/lib/GeoExt/resources/css/geoext-all-debug.css" />
     <link rel="stylesheet" type="text/css" href="/geoserver/lib/GeoExt/resources/css/popup.css" />
+    <link rel="stylesheet" type="text/css" href="/geoserver/lib/ext-3.4.0/resources/css/ext-all.css" />
     <link rel="stylesheet" type="text/css" href="/geoserver/lib/css/silk.css">
     <link rel="stylesheet" type="text/css" href="/geoserver/lib/css/geosilk.css">
-<!-- -->
-
 
     <script type="text/javascript">
       var featureJson = ${featureJson};
       var fieldsJson = ${fieldsJson};
       var columnsJson = ${columnsJson};
 
-      var featureStore, map, mapPanel, app;
+      var map, mapPanel, app;
 
       function mapd() {
         console.dir(map);
       }
-      function stored() {
-        console.dir(featureStore);
+      function appd() {
+        console.dir(app);
       }
 
       Ext.onReady(function() {
@@ -49,23 +34,25 @@
         // with default controls that use images that don't exist.
         // So, I'm manually specifying them so they'll use the correct images.
         map = new OpenLayers.Map({
-          controls: [new OpenLayers.Control.Navigation(),
+          controls: [ new OpenLayers.Control.Navigation(),
             new OpenLayers.Control.Attribution(),
             new OpenLayers.Control.PanPanel(),
             new OpenLayers.Control.ZoomPanel() ]
         });
         
+        // Add a default base layer
         var baseLayer = new OpenLayers.Layer.WMS(
           "Base Layer",
           "http://vmap0.tiles.osgeo.org/wms/vmap0",
           {layers: 'basic'}
         );
 
-        // create vector layer
+        // create vector layer for the requested features
         var vectorLayer = new OpenLayers.Layer.Vector("${layerName?js_string}");
         map.addLayers([baseLayer, vectorLayer]);
         loadData();
 
+        // Loads features from the JSON to the vector layer
         function loadData() {
           var reader = new OpenLayers.Format.GeoJSON();
           var vecs = reader.read(featureJson);
@@ -73,51 +60,28 @@
         }
 
         // create map panel
-        mapPanel = new GeoExt.MapPanel({
+        mapPanel = { 
+          xtype: "gx_mappanel",
+          ref: "map_panel",
+          id: "map_panel",
           title: "Map",
           region: "center",
           height: 300,
           //width: 600,
           map: map
-        });
-
-        // create feature store, binding it to the vector layer
-        featureStore = new GeoExt.data.FeatureStore({
-          layer: vectorLayer,
-          fields: fieldsJson,
-          autoLoad: false,
-
-          featureFilter: new OpenLayers.Filter({
-            evaluate: function(feature) {
-              // Don't want deleted features showing up in the store.
-              return feature.state != OpenLayers.State.DELETE
-            }
-          }),
-
-          proxy: new GeoExt.data.ProtocolProxy({
-            protocol: new OpenLayers.Protocol.WFS({
-              url: "${wfsUrl}", 
-              version: "1.1.0",
-              featureType: "${layerName?js_string}", 
-              featureNS: "${layerNS?js_string}", 
-              srsName: "EPSG:4326", //"EPSG:900913",
-              geometryName: ${geometryName},
-              maxFeatures: 250
-            })
-          })
-        });
+        };
 
         // Either there is geometry and the user should be able to draw it
         // when creating.
         // Or the layer is aspatial and just add a feature to the grid.
         <#if geometryType?? >
         var createButton = new GeoExt.Action({
-              text: "Create Feature",
-              iconCls: "silk_table_add",
-              enableToggle: true,
-              map: map,
-              control: getDrawControl()
-          });
+          text: "Create Feature",
+          iconCls: "silk_table_add",
+          enableToggle: true,
+          map: map,
+          control: getDrawControl()
+        });
           
         function getDrawControl() {
           var gt = "${(geometryType!"")?js_string}";
@@ -138,14 +102,36 @@
 
         <#else>
         var createButton = {
-              text: "Create Feature",
-              iconCls: "silk_table_add",
-              handler: function() {
-                var feature = new OpenLayers.Feature.Vector();
-                feature.state = OpenLayers.State.INSERT;
-                vectorLayer.addFeatures([feature]);
-              }};
+          text: "Create Feature",
+          iconCls: "silk_table_add",
+          handler: function() {
+            selModel.selectControl.unselectAll();
+            var feature = new OpenLayers.Feature.Vector();
+            feature.state = OpenLayers.State.INSERT;
+            vectorLayer.addFeatures([feature]);
+          }
+        };
         </#if>
+
+        var deleteButton = new Ext.Button({
+          text: "Delete Feature",
+          iconCls: "silk_table_delete",
+          disabled: true,
+          handler: function() {
+
+            app.feature_table.getSelectionModel().each(function(rec) {
+              var feature = rec.getFeature();
+              vectorLayer.removeFeatures([feature]);
+              if (feature.state != OpenLayers.State.INSERT) {
+                // Set the state to DELETE
+                feature.state = OpenLayers.State.DELETE;
+                // add the deleted feature back to the layer (will not render)
+                vectorLayer.addFeatures([feature]);
+              }
+            });
+
+          }
+        });
 
         // Select Model links the grid and the map together.
         // Defining it explicitly so the modifyFeature control can use its
@@ -154,27 +140,45 @@
         map.addControl(modControl);
         var selModel = new GeoExt.grid.FeatureSelectionModel();
         
-        var editButton = new Ext.Button({
-              text: "Move Feature",
-              iconCls: "silk_table_edit",
-              enableToggle: true,
-              disabled: true,
-              toggleHandler: function(button, state) {
-                if( true === state ) {
-                  var feature = selModel.selectControl.layer.selectedFeatures[0];
-                  if( feature && undefined !== feature && null !== feature ) {
-                    modControl.selectFeature(feature);
-                  }
-                  selModel.selectControl.multipleKey = null;
-                  selModel.singleSelect = true;
-                } else {
-                  modControl.unselectFeature();
-                  selModel.selectControl.multipleKey = "ctrlKey";
-                  selModel.singleSelect = false;
-                }
+        var modifyButton = new Ext.Button({
+          text: "Move Feature",
+          iconCls: "silk_table_edit",
+          enableToggle: true,
+          disabled: true,
+          toggleHandler: function(button, state) {
+            if( true === state ) {
+              var feature = selModel.selectControl.layer.selectedFeatures[0];
+              if( feature && undefined !== feature && null !== feature ) {
+                modControl.selectFeature(feature);
               }
-          });
+              selModel.selectControl.multipleKey = null;
+              selModel.singleSelect = true;
+            } else {
+              modControl.unselectFeature();
+              selModel.selectControl.multipleKey = "ctrlKey";
+              selModel.singleSelect = false;
+            }
+          }
+        });
 
+        var undoButton = {
+          text: "Undo Changes",
+          iconCls: "silk_arrow_undo",
+          handler: function() {
+            vectorLayer.removeAllFeatures();
+            modifyButton.toggle(false);
+            deleteButton.toggle(false);
+            loadData();
+          }
+        };
+
+        var saveButton = {
+          text: "Save Changes",
+          iconCls: "silk_table_save",
+          handler: saveVectorLayer
+        };
+
+        // Editor grid for the requested features
         var feature_table = {
           xtype: "editorgrid",
           ref: "feature_table",
@@ -183,55 +187,49 @@
           region: "north",
           height: 300,
           sm: selModel,
-          store: featureStore,
+          store: new GeoExt.data.FeatureStore({
+            layer: vectorLayer,
+            fields: fieldsJson,
+            autoLoad: false,
+
+            featureFilter: new OpenLayers.Filter({
+              evaluate: function(feature) {
+                // Don't want deleted features showing up in the store.
+                return feature.state != OpenLayers.State.DELETE
+              }
+            }),
+
+            proxy: new GeoExt.data.ProtocolProxy({
+              protocol: new OpenLayers.Protocol.WFS({
+                url: "${wfsUrl}", 
+                version: "1.1.0",
+                featureType: "${layerName?js_string}", 
+                featureNS: "${layerNS?js_string}", 
+                srsName: "EPSG:4326", //"EPSG:900913",
+                geometryName: ${geometryName},
+                maxFeatures: 250
+              })
+            })
+          }),
           columns: columnsJson,
           bbar: [
             createButton,
-          {
-            text: "Delete Feature",
-            iconCls: "silk_table_delete",
-            handler: function() {
-
-              app.feature_table.getSelectionModel().each(function(rec) {
-                var feature = rec.getFeature();
-                vectorLayer.removeFeatures([feature]);
-                if (feature.state != OpenLayers.State.INSERT) {
-                  // Set the state to DELETE
-                  feature.state = OpenLayers.State.DELETE;
-                  // add the deleted feature back to the layer (will not render)
-                  vectorLayer.addFeatures([feature]);
-                }
-              });
-
-            }
-          },
-            editButton,
-          {
-            text: "Undo Changes",
-            iconCls: "silk_arrow_undo",
-            handler: function() {
-              vectorLayer.removeAllFeatures();
-              editButton.toggle(false);
-              loadData();
-            }
-          },
-          {
-            text: "Save Changes",
-            iconCls: "silk_table_save",
-            handler: saveVectorLayer
-          }]
+            deleteButton,
+            modifyButton,
+            undoButton,
+            saveButton 
+          ]
         }
 
-
-        // init app
+        // Main viewport for the whole app
         app = new Ext.Viewport({
           layout: "border",
           items: [mapPanel, feature_table]
         });
 
+        // Saves the vector layer by commiting through WFS-T
         function saveVectorLayer() {
-
-          // if feature has changed (and not by update or delete), change its
+          // if feature has changed (and not by insert or delete), change its
           // state to reflect that
           Ext.each(vectorLayer.features, function(n) {
             if (!n.state && !equalAttributes(n.data, n.attributes)) {
@@ -243,6 +241,8 @@
           app.feature_table.store.proxy.protocol.commit(
             vectorLayer.features,
             {
+              // TODO: change this to a save strategy with different callbacks
+              // for success and failure.
               callback: function() {
                 // refresh everything the user sees
                 window.location.reload();
@@ -251,28 +251,42 @@
           );
         }
 
+        // Add select and unselect handlers to the select control to tell
+        // the modify control which feature to modify.
         selModel.selectControl.onSelect = function(feature) {
-          if(editButton.pressed) {
+          if(modifyButton.pressed) {
             modControl.selectFeature(feature);
           } else {
-            if( feature.layer.selectedFeatures.length == 1 ) {
-              editButton.enable();
-            } else {
-              editButton.disable();
-            }
+            enableModifyButton(feature);
           }
+          enableDeleteButton(feature);
         };        
         selModel.selectControl.onUnselect = function(feature) {
-          if(editButton.pressed) {
+          if(modifyButton.pressed) {
             modControl.unselectFeature(feature);
           } else {
-            if( feature.layer.selectedFeatures.length == 1 ) {
-              editButton.enable();
-            } else {
-              editButton.disable();
-            }
+            enableModifyButton(feature);
           }
+          enableDeleteButton(feature);
         };
+
+        function enableModifyButton(feature) {
+          // Set the modify button enabled/disabled
+          if( feature.layer.selectedFeatures.length == 1 ) {
+            modifyButton.enable();
+          } else {
+            modifyButton.disable();
+          }
+        }
+
+        function enableDeleteButton(feature) {
+          // Set the delete button enabled/disabled
+          if( feature.layer.selectedFeatures.length > 0 ) {
+            deleteButton.enable();
+          } else {
+            deleteButton.disable();
+          }
+        }
 
         // Putting this down here, seems to need to happen after something.
         // So its after everything.
