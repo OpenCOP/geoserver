@@ -14,6 +14,8 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 import net.opengis.wfs.FeatureCollectionType;
 import net.opengis.wfs.GetFeatureType;
 import org.geoserver.config.GeoServer;
@@ -49,6 +51,7 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
     cfg.setObjectWrapper(bw);
   }
   private GeoJSONOutputFormat jsonFormatter;
+  private Map<String, String> typeConversion;
 
   public HTMLOutputFormat(GeoServer gs) {
     //this is the name of your output format, it is the string
@@ -56,6 +59,16 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
     // GEtFeature request: 
     // ie ;.../geoserver/wfs?request=getfeature&outputFormat=myOutputFormat
     super(gs, "html");
+
+    // Map to convert Java types to Ext types
+    typeConversion = new TreeMap<String, String>();
+    typeConversion.put("Integer", "int");
+    typeConversion.put("Short", "int");
+    typeConversion.put("Long", "int");
+    typeConversion.put("String", "string");
+    typeConversion.put("Timestamp", "date");
+    typeConversion.put("Float", "float");
+    typeConversion.put("Double", "float");
   }
 
   public HTMLOutputFormat(GeoServer gs, GeoJSONOutputFormat json) {
@@ -213,7 +226,14 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
   private GeoJSONBuilder addAttributeToFieldsJson(GeoJSONBuilder builder, AttributeType attribute) {
     builder.object();
     builder.key("name").value(attribute.getName());
-    builder.key("type").value(attribute.getBinding().getSimpleName());
+    String type = getExtDataType(attribute.getBinding().getSimpleName());
+    builder.key("type").value(type);
+
+    // Add a format for dates
+    if("date".equalsIgnoreCase(type)) {
+      builder.key("dateFormat").value("Y-m-d H:i:s.u");
+    }
+
     builder.endObject();
     return builder;
   }
@@ -229,23 +249,40 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
     builder.key("header").value(attribute.getName());
     builder.key("sortable").value(true);
 
-    String type = attribute.getBinding().getSimpleName();
+    String type = getExtDataType(attribute.getBinding().getSimpleName());
     String gridXtype = "numbercolumn";
     String editorXtype = "numberfield";
 
-    if ("timestamp".equalsIgnoreCase(type)) {
+    if ("date".equalsIgnoreCase(type)) {
       gridXtype = "gridcolumn";
-      editorXtype = "textfield";
+      editorXtype = "xdatetime";
+      builder.key("width").value(160);
     } else if ("string".equalsIgnoreCase(type)) {
       gridXtype = "gridcolumn";
       editorXtype = "textfield";
     }
 
-    builder.key("xtype").value(gridXtype);
-    builder.key("editor").object().key("xtype").value(editorXtype).endObject();
+//    builder.key("xtype").value(gridXtype);
+    builder.key("editor").object().key("xtype").value(editorXtype);
+
+    if ("date".equalsIgnoreCase(type)) {
+      builder.key("dtSeparator").value("T");
+      builder.key("hiddenFormat").value("Y-m-d\\TH:i:s");
+      builder.key("timeWidth").value(70);
+      builder.key("timeFormat").value("H:i:s");
+      builder.key("timeConfig").object().key("altFormats").value("H:i:s").key("allowBlank").value(true).endObject();
+      builder.key("dateFormat").value("Y-m-d");
+      builder.key("dateConfig").object().key("altFormats").value("Y-m-d").key("allowBlank").value(true).endObject();
+    }
+    
+    builder.endObject(); // end editor
 
     builder.endObject();
     return builder;
+  }
+
+  private String getExtDataType(String javaType) {
+    return typeConversion.get(javaType);
   }
 
   private boolean isGeometryAttribute(AttributeType attribute) {

@@ -6,6 +6,7 @@
     <script src="/geoserver/lib/ext-3.4.0/adapter/ext/ext-base.js" type="text/javascript"></script>
 <!--    <script type="text/javascript" src="http://extjs.cachefly.net/ext-3.4.0/ext-all-debug.js"></script>-->
     <script src="/geoserver/lib/ext-3.4.0/ext-all.js" type="text/javascript"></script>
+    <script src="/geoserver/lib/ext-3.4.0/ext-datetime.js" type="text/javascript"></script>
     <script src="/geoserver/lib/GeoExt/GeoExt.js" type="text/javascript"></script>    
 
     <link rel="stylesheet" type="text/css" href="/geoserver/lib/GeoExt/resources/css/geoext-all-debug.css" />
@@ -29,6 +30,13 @@
       }
 
       Ext.onReady(function() {
+        // Add a renderer to all date columns
+        Ext.each(columnsJson, function(column){
+          if( column.editor && column.editor.xtype && column.editor.xtype.match(/xdatetime/i) ) {
+            column.renderer = Ext.util.Format.dateRenderer('Y-m-d H:i:s');
+          }
+        });
+
         // create map instance
         // If you create a map without specifying controls, it creates 
         // with default controls that use images that don't exist.
@@ -231,11 +239,13 @@
         function saveVectorLayer() {
           // if feature has changed (and not by insert or delete), change its
           // state to reflect that
-          Ext.each(vectorLayer.features, function(n) {
-            if (!n.state && !equalAttributes(n.data, n.attributes)) {
-              n.state = OpenLayers.State.UPDATE;
+          Ext.each(app.feature_table.store.getModifiedRecords(), function(record) {
+            var feature = record.getFeature();
+            if (!feature.state) {
+              feature.state = OpenLayers.State.UPDATE;
             }
-          })
+            feature.attributes = record.getChanges();
+          });
 
           // commit vector layer via WFS-T
           app.feature_table.store.proxy.protocol.commit(
