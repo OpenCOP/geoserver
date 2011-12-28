@@ -69,6 +69,7 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
     typeConversion.put("Timestamp", "date");
     typeConversion.put("Float", "float");
     typeConversion.put("Double", "float");
+    typeConversion.put("Boolean", "boolean");
   }
 
   public HTMLOutputFormat(GeoServer gs, GeoJSONOutputFormat json) {
@@ -260,6 +261,9 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
     } else if ("string".equalsIgnoreCase(type)) {
       gridXtype = "gridcolumn";
       editorXtype = "textfield";
+    } else if ("boolean".equalsIgnoreCase(type)) {
+      gridXtype = "booleancolumn";
+      editorXtype = "checkbox";
     }
 
 //    builder.key("xtype").value(gridXtype);
