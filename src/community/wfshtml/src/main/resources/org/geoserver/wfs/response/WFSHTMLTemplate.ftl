@@ -55,8 +55,61 @@
           {layers: 'basic'}
         );
 
+        var saveStrategy = new OpenLayers.Strategy.Save();
+        // Alert the user that the WFS-T has succeeded
+        saveStrategy.events.register('success', null, function(evt){
+          var message = "<h3>Summary</h3><table>";
+          Ext.each(evt.response.priv.responseXML.childNodes[0].childNodes[0].childNodes, function(item){
+            message += "<tr><td>" + item.localName + ":</td><td>" + item.textContent + "</td></tr>";
+          });
+          message += "</table>The page will now reload to reflect your changes.";
+          Ext.MessageBox.show({
+            title: "WFS Transaction Success",
+            msg: message,
+            buttons: Ext.MessageBox.OK,
+            fn: function(btn) {
+              window.location.reload();
+            },
+            icon: Ext.MessageBox.INFO
+          });
+        });
+
+        // Alert the user that the WFS-T has failed
+        saveStrategy.events.register('fail', null, function(evt){
+          var message = "";
+          Ext.each(evt.response.error.exceptionReport.exceptions, function(ex){
+            message += "<h3>" + ex.code + "</h3>";
+            var texts = ex.texts;
+            if( texts.length > 0 ) {
+              message += "<ul>";
+              Ext.each(texts, function(text){
+                message += "<li>" + text + "</li>";
+              });
+              message += "</ul>";
+            }
+          });
+          Ext.MessageBox.show({
+            title: "WFS Transaction Failure",
+            msg: message,
+            buttons: Ext.MessageBox.OK,
+            icon: Ext.MessageBox.ERROR
+          });
+        });
+
         // create vector layer for the requested features
-        var vectorLayer = new OpenLayers.Layer.Vector("${layerName?js_string}");
+        var vectorLayer = new OpenLayers.Layer.Vector("${layerName?js_string}",
+        {
+          strategies:[saveStrategy],
+          protocol: new OpenLayers.Protocol.WFS({
+                url: "${wfsUrl}", 
+                version: "1.1.0",
+                featureType: "${layerName?js_string}", 
+                featureNS: "${layerNS?js_string}", 
+                srsName: "EPSG:4326", //"EPSG:900913",
+                geometryName: ${geometryName},
+                maxFeatures: 250
+              })
+        });
         map.addLayers([baseLayer, vectorLayer]);
         loadData();
 
@@ -113,10 +166,11 @@
           text: "Create Feature",
           iconCls: "silk_table_add",
           handler: function() {
-            selModel.selectControl.unselectAll();
+//            selModel.selectControl.unselectAll();
             var feature = new OpenLayers.Feature.Vector();
             feature.state = OpenLayers.State.INSERT;
             vectorLayer.addFeatures([feature]);
+            selModel.selectControl.select(feature);
           }
         };
         </#if>
@@ -205,18 +259,6 @@
                 // Don't want deleted features showing up in the store.
                 return feature.state != OpenLayers.State.DELETE
               }
-            }),
-
-            proxy: new GeoExt.data.ProtocolProxy({
-              protocol: new OpenLayers.Protocol.WFS({
-                url: "${wfsUrl}", 
-                version: "1.1.0",
-                featureType: "${layerName?js_string}", 
-                featureNS: "${layerNS?js_string}", 
-                srsName: "EPSG:4326", //"EPSG:900913",
-                geometryName: ${geometryName},
-                maxFeatures: 250
-              })
             })
           }),
           columns: columnsJson,
@@ -248,17 +290,7 @@
           });
 
           // commit vector layer via WFS-T
-          app.feature_table.store.proxy.protocol.commit(
-            vectorLayer.features,
-            {
-              // TODO: change this to a save strategy with different callbacks
-              // for success and failure.
-              callback: function() {
-                // refresh everything the user sees
-                window.location.reload();
-              }
-            }
-          );
+          saveStrategy.save();
         }
 
         // Add select and unselect handlers to the select control to tell
