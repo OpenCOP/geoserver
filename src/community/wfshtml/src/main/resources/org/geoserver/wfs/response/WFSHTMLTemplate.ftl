@@ -287,6 +287,13 @@
               feature.state = OpenLayers.State.UPDATE;
             }
             feature.attributes = record.getChanges();
+            
+            // So apparently GeoExt has a state in its data for each record.
+            // This should match up to feature.state (OpenLayers state).
+            // This collides quite nicely with an actually attribute named state.
+            // Not sure what to do about it right now, so just remove it from the
+            // attributes so that it doesn't break the transaction.
+            delete feature.attributes.state;
           });
 
           // commit vector layer via WFS-T
