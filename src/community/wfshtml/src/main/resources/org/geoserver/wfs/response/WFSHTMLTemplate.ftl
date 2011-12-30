@@ -136,14 +136,6 @@
         // when creating.
         // Or the layer is aspatial and just add a feature to the grid.
         <#if geometryType?? >
-        var createButton = new GeoExt.Action({
-          text: "Create Feature",
-          iconCls: "silk_table_add",
-          enableToggle: true,
-          map: map,
-          control: getDrawControl()
-        });
-          
         function getDrawControl() {
           var gt = "${(geometryType!"")?js_string}";
           var handler = null;
@@ -160,6 +152,31 @@
             return null;
           }
         }
+
+        var drawControl = getDrawControl();
+        drawControl.featureAdded = function(feature) {
+          selModel.unlock();
+          selModel.selectControl.select(feature);
+          createButton.toggle(false);
+        };
+        map.addControls([drawControl]);
+        
+        var createButton = new Ext.Button({
+          text: "Create Feature",
+          iconCls: "silk_table_add",
+          enableToggle: true,
+          toggleHandler: function(button, state) {
+            if( true === state ) {
+              modifyButton.toggle(false);
+              selModel.selectControl.unselectAll();
+              selModel.lock();
+              drawControl.activate();
+            } else {
+              drawControl.deactivate();
+              selModel.unlock();
+            }
+          }
+        });
 
         <#else>
         var createButton = {
@@ -180,9 +197,28 @@
           iconCls: "silk_table_delete",
           disabled: true,
           handler: function() {
+            // Turn off the modifyButton
+            modifyButton.toggle(false);
 
             app.feature_table.getSelectionModel().each(function(rec) {
               var feature = rec.getFeature();
+                          
+              // There shouldn't be any features selected since the delete will
+              // remove all selected features.  Calling unselect() to make
+              // sure the onUnselect handler is called.
+              selModel.selectControl.unselect(feature);
+      
+              // TODO: I believe this could be a better implementation.
+              // Try it out when you get time.
+//              if(feature.fid == undefined) {
+//                vectorLayer.destroyFeatures([feature]);
+//              } else {
+//                feature.state = OpenLayers.State.DELETE;
+//                vectorLayer.events.triggerEvent("afterfeaturemodified", {feature: feature});
+//                feature.renderIntent = "select";
+//                vectorLayer.drawFeature(feature);
+//              }
+
               vectorLayer.removeFeatures([feature]);
               if (feature.state != OpenLayers.State.INSERT) {
                 // Set the state to DELETE
@@ -227,9 +263,13 @@
           text: "Undo Changes",
           iconCls: "silk_arrow_undo",
           handler: function() {
-            vectorLayer.removeAllFeatures();
+            // Turn off all Buttons
+            createButton.toggle(false);
             modifyButton.toggle(false);
-            deleteButton.toggle(false);
+            // Remove all the features from the vector layer
+            selModel.selectControl.unselectAll();
+            vectorLayer.removeAllFeatures();
+            // Load the original data back into the vector layer
             loadData();
           }
         };
