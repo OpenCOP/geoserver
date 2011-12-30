@@ -147,7 +147,11 @@
             var handler = "Point";
           }
           if( null != handler ) {
-            return new OpenLayers.Control.DrawFeature(vectorLayer, OpenLayers.Handler[handler]);
+            return new OpenLayers.Control.DrawFeature(vectorLayer, 
+              OpenLayers.Handler[handler],
+              {
+                multi: (gt.match(/Multi/i)) ? true : false
+              });
           } else {
             return null;
           }
