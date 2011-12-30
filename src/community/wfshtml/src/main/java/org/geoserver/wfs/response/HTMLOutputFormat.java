@@ -126,11 +126,6 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
     SimpleFeatureType featureType = features.getSchema();
     map.put("layerName", featureType.getName().getLocalPart());
     map.put("layerNS", featureType.getName().getNamespaceURI());
-    ReferencedEnvelope coord = features.getBounds().transform(DefaultGeographicCRS.WGS84, true);
-    map.put("minX", coord.getMinX());
-    map.put("minY", coord.getMinY());
-    map.put("maxX", coord.getMaxX());
-    map.put("maxY", coord.getMaxY());
 //    } else {
 //      map.put("layerName", "GeoServer Layers");
 //    }

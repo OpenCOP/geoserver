@@ -383,15 +383,10 @@
 
         // Putting this down here, seems to need to happen after something.
         // So its after everything.
-        map.zoomToExtent(
-          new OpenLayers.Bounds(
-            ${minX?c}, 
-            ${minY?c},
-            ${maxX?c}, 
-            ${maxY?c}
-          ), 
-          true
-        );
+        var initialExtent = vectorLayer.getDataExtent();
+        if( null !== initialExtent ) {
+          map.zoomToExtent(initialExtent, true);
+        }
 
     }); // end Ext.onReady()
 
