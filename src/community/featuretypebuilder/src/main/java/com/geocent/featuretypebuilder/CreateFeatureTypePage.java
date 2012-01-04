@@ -1,6 +1,5 @@
 package com.geocent.featuretypebuilder;
 
-//import org.geoserver.web.GeoServerBasePage;
 import org.geoserver.web.GeoServerSecuredPage;
 import org.apache.wicket.markup.html.basic.Label;
 
