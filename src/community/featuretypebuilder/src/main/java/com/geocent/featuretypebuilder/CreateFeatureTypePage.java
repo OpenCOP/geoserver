@@ -21,7 +21,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       }
     });
 //    Db.update("create table test3 (id integer, whatever varchar(20));");
-    Db.update("drop table test3;");
+    DbUtils.deleteTable("test2");
   }
 
 }
