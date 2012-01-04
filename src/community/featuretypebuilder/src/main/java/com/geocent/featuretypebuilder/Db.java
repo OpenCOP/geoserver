@@ -9,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Access the OpenCOP database.
+ * Fundamental operations on the OpenCOP database.
  *
  * @author thanthese
  */
