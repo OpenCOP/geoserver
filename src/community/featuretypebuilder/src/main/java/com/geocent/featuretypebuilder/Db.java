@@ -27,16 +27,18 @@ public class Db {
    *
    * @param query Query to execute.
    * @param fn Callback that takes ResultSet.
+   * @return Whatever fn returns.
    */
-  public static void query(String query, ResultSetCallback fn) {
+  public static Object query(String query, ResultSetCallback fn) {
     Connection conn = null;
     Statement stmt = null;
     ResultSet rs = null;
+    Object result = null;
     try {
       conn = getConnection();
       stmt = conn.createStatement();
       rs = stmt.executeQuery(query);
-      fn.fn(rs);
+      result = fn.fn(rs);
     } catch (SQLException ex) {
       Logger.getLogger(CreateFeatureTypePage.class.getName()).
               log(Level.SEVERE, null, ex);
@@ -62,6 +64,7 @@ public class Db {
         }
       }
     }
+    return result;
   }
 
   /**

@@ -8,5 +8,5 @@ import java.sql.SQLException;
  * @author thanthese
  */
 public interface ResultSetCallback {
-    void fn(ResultSet rs) throws SQLException;
+    Object fn(ResultSet rs) throws SQLException;
 }
