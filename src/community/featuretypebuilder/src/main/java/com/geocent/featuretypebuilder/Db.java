@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 public class Db {
 
   private static String username = "opencop";
-  private static String password = "57levelsofeoc";
+  private static String password = "password";
   private static String database = "dynamic_feature";
 
   private Db() { throw new AssertionError(); }  // don't instantiate
