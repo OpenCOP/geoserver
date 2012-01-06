@@ -14,7 +14,9 @@ public class DbUtils {
   private DbUtils() { throw new AssertionError(); }  // don't instantiate
 
   public static void deleteTable(String tablename) {
-    Db.update(String.format("drop table %s;", tablename));
+    if(isTableExists(tablename)) {
+      Db.update(String.format("drop table %s;", tablename));
+    }
   }
 
   public static boolean isTableExists(String tablename) {

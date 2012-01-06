@@ -1,7 +1,16 @@
 <html>
   <body>
     <wicket:extend>
-      <div wicket:id="hellolabel">something</div>
+      <form wicket:id="form">
+        <table>
+          <tr wicket:id="schema">
+            <td>remove button</td>
+            <td><input type="text" wicket:id="name"></input></td>
+            <td><select wicket:id="type"></select></td>
+          </tr>
+        </table>
+        <input type="submit" value="Save Feature Type" />
+      </form>
     </wicket:extend>
   </body>
 </html>
