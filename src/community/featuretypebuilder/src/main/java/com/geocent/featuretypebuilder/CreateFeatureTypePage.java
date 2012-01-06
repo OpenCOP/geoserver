@@ -12,8 +12,11 @@ import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.PropertyModel;
+import org.apache.wicket.util.value.ValueMap;
 
 public class CreateFeatureTypePage extends GeoServerSecuredPage {
+
+  private String test = "test this";  // FOR DEVELOPMENT
 
   private static final List<String> TYPES = Arrays.asList(new String[] {
     "integer",
@@ -26,7 +29,14 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
 
   public CreateFeatureTypePage() {
 
-    Form form = new Form("form");
+    Form form = new Form("form") {
+      @Override
+      protected void onSubmit() {
+//        ValueMap values = (ValueMap) getModelObject();
+//        System.out.println(values.toString());
+        info("Saved model " + getDefaultModelObjectAsString());
+      }
+    };
     add(form);
 
     List<Row> rows = Arrays.asList(new Row[] {
@@ -40,7 +50,8 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       protected void populateItem(ListItem item) {
         Row row = (Row) item.getModelObject();
         item.add(new TextField("name", new PropertyModel<String>(row, "name")));
-        item.add(new DropDownChoice<String>("type", new PropertyModel<String>(row, "type"), TYPES));
+        item.add(new DropDownChoice<String>("type",
+                         new PropertyModel<String>(row, "type"), TYPES));
       }
     });
   }
