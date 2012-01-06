@@ -1,10 +1,12 @@
 package com.geocent.featuretypebuilder;
 
+import java.io.Serializable;
+
 /**
  *
  * @author thanthese
  */
-public class Row {
+public class Row implements Serializable {
   private String name;
   private String type;
   public Row(String name, String type) {

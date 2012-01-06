@@ -6,14 +6,23 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.PropertyModel;
 
-
 public class CreateFeatureTypePage extends GeoServerSecuredPage {
+
+  private static final List<String> TYPES = Arrays.asList(new String[] {
+    "integer",
+    "varchar(20)",
+    "varchar(500)",
+    "text",
+    "boolean",
+    "geometry",
+    "point"});
 
   public CreateFeatureTypePage() {
 
@@ -23,15 +32,15 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
     List<Row> rows = Arrays.asList(new Row[] {
       new Row("id", "integer"),
       new Row("version", "integer"),
-      new Row("description", "varchar 500"),
-      new Row("the_geom", "Geometry")
+      new Row("description", "varchar(500)"),
+      new Row("the_geom", "geometry")
     });
 
     form.add(new ListView("schema", rows) {
       protected void populateItem(ListItem item) {
         Row row = (Row) item.getModelObject();
-        item.add(new TextField("name", new PropertyModel(row, "name")));
-        item.add(new TextField("type", new PropertyModel(row, "type")));
+        item.add(new TextField("name", new PropertyModel<String>(row, "name")));
+        item.add(new DropDownChoice<String>("type", new PropertyModel<String>(row, "type"), TYPES));
       }
     });
   }
