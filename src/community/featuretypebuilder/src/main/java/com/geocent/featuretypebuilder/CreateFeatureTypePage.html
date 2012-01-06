@@ -1,13 +1,15 @@
 <html>
   <body>
     <wicket:extend>
-      <table>
-        <tr wicket:id="schema">
-          <td>remove button</td>
-          <td><span wicket:id="name"></span></td>
-          <td><span wicket:id="type"></span></td>
-        </tr>
-      </table>
+      <form wicket:id="form">
+        <table>
+          <tr wicket:id="schema">
+            <td>remove button</td>
+            <td><input type="text" wicket:id="name"></input></td>
+            <td><input type="text" wicket:id="type"></input></td>
+          </tr>
+        </table>
+      </form>
     </wicket:extend>
   </body>
 </html>

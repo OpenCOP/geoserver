@@ -6,13 +6,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
+import org.apache.wicket.model.PropertyModel;
 
 
 public class CreateFeatureTypePage extends GeoServerSecuredPage {
 
   public CreateFeatureTypePage() {
+
+    Form form = new Form("form");
+    add(form);
 
     List<Row> rows = Arrays.asList(new Row[] {
       new Row("id", "integer"),
@@ -21,11 +27,11 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       new Row("the_geom", "Geometry")
     });
 
-    add(new ListView("schema", rows) {
+    form.add(new ListView("schema", rows) {
       protected void populateItem(ListItem item) {
         Row row = (Row) item.getModelObject();
-        item.add(new Label("name", row.getName()));
-        item.add(new Label("type", row.getType()));
+        item.add(new TextField("name", new PropertyModel(row, "name")));
+        item.add(new TextField("type", new PropertyModel(row, "type")));
       }
     });
   }
@@ -51,15 +57,4 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
     System.out.println(DbUtils.isTableExists("test3"));
   }
 
-}
-
-class Row {
-  private String name;
-  private String type;
-  public Row(String name, String type) {
-    this.name = name;
-    this.type = type;
-  }
-  public String getName() { return name; }
-  public String getType() { return type; }
 }
