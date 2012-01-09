@@ -4,6 +4,7 @@ import org.geoserver.web.GeoServerSecuredPage;
 import org.apache.wicket.markup.html.basic.Label;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -17,28 +18,30 @@ import org.apache.wicket.util.value.ValueMap;
 
 public class CreateFeatureTypePage extends GeoServerSecuredPage {
 
-  private static final List<String> TYPES = Arrays.asList(new String[] {
-    "integer",
-    "varchar(20)",
-    "varchar(500)",
-    "text",
-    "boolean",
-    "geometry",
-    "point"});
-
   public final class FeatureTypeForm extends Form<ValueMap> {
 
-    List<Row> rows = Arrays.asList(new Row[] {
+    private final List<String> TYPES = Arrays.asList(new String[] {
+      "integer",
+      "varchar(20)",
+      "varchar(500)",
+      "text",
+      "boolean",
+      "geometry",
+      "point"});
+
+    List<Row> rows = new ArrayList(Arrays.asList(new Row[] {
       new Row("id", "integer"),
       new Row("version", "integer"),
       new Row("description", "varchar(500)"),
       new Row("the_geom", "geometry")
-    });
+    }));
 
     public FeatureTypeForm(final String id) {
       super(id, new CompoundPropertyModel<ValueMap>(new ValueMap()));  // no validation
 
-      add(new TextField<String>("comment").setType(String.class));
+      add(new TextField<String>("layername").setType(String.class));
+      add(new TextField<String>("namespace").setType(String.class));
+      add(new TextField<String>("style").setType(String.class));
 
       add(new ListView("schema", rows) {
         @Override
@@ -57,14 +60,8 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
     @Override
     public final void onSubmit() {
       ValueMap values = getModelObject();
-
-
-      System.out.println("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * on submit");
       System.out.println(values.toString());
-      System.out.println((String) values.get("comment"));
-      System.out.println(values.get("schema"));
       System.out.println(rows);
-      System.out.println("-----");
     }
   }
 
