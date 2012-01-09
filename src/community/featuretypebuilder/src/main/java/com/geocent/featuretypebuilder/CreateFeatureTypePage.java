@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.HiddenField;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
@@ -42,16 +43,24 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       add(new TextField<String>("layername").setType(String.class));
       add(new TextField<String>("namespace").setType(String.class));
       add(new TextField<String>("style").setType(String.class));
+      add(new HiddenField<String>("serialized-fields")
+                .setType(String.class)
+                .setOutputMarkupId(true));
+      add(buildAttrsTable(rows));
+    }
 
-      add(new ListView("schema", rows) {
+    private ListView buildAttrsTable(List<Row> rows) {
+      return new ListView("schema", rows) {
         @Override
         protected void populateItem(ListItem item) {
           Row row = (Row) item.getModelObject();
           item.add(new TextField("name", new PropertyModel<String>(row, "name")));
-          item.add(new DropDownChoice<String>("type",
-                  new PropertyModel<String>(row, "type"), TYPES));
+          item.add(new DropDownChoice<String>(
+                            "type",
+                            new PropertyModel<String>(row, "type"),
+                            TYPES));
         }
-      });
+      };
     }
 
     /**
@@ -61,7 +70,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
     public final void onSubmit() {
       ValueMap values = getModelObject();
       System.out.println(values.toString());
-      System.out.println(rows);
+      System.out.println(values.getString("serialized-fields"));
     }
   }
 
