@@ -23,7 +23,16 @@ public class Row implements Serializable {
   public String getName() { return name; }
   public String getType() { return type; }
 
-  private String correctName(String name) {
+  /**
+   * Two functions:
+   *
+   * 1.  "hello world" -> "hello_world"
+   * 2.  "1test"       -> "_1test"
+   *
+   * @param name
+   * @return
+   */
+  public static String correctName(String name) {
     String n = name.toLowerCase().replace(" ", "_");
     boolean startsWithNum = n.length() > 0 && Character.isDigit(n.charAt(0));
     return startsWithNum ? "_" + n : n;

@@ -21,6 +21,10 @@ import org.apache.wicket.util.value.ValueMap;
 
 public class CreateFeatureTypePage extends GeoServerSecuredPage {
 
+  public CreateFeatureTypePage() {
+    add(new FeatureTypeForm("featureTypeForm"));
+  }
+
   public final class FeatureTypeForm extends Form<ValueMap> {
 
     private final List<String> TYPES = Arrays.asList(new String[] {
@@ -65,15 +69,19 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       };
     }
 
-    /**
-     * Show the resulting valid edit
-     */
     @Override
     public final void onSubmit() {
       ValueMap values = getModelObject();
-      System.out.println(values.toString());
-      System.out.println(values.getString("serialized-fields"));
-      System.out.println(parseSerialization(values.getString("serialized-fields")));
+
+      String layername = values.getString("layername");
+      String namespace = values.getString("namespace");
+      String style = values.getString("style");
+      List<Row> rows = parseSerialization(values.getString("serialized-fields"));
+
+      System.out.println("layername = " + layername);
+      System.out.println("namespace = " + namespace);
+      System.out.println("style = " + style);
+      System.out.println("rows = " + rows);
     }
 
     private List<Row> parseSerialization(String serialization) {
@@ -97,10 +105,6 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       }
       return rows;
     }
-  }
-
-  public CreateFeatureTypePage() {
-    add(new FeatureTypeForm("featureTypeForm"));
   }
 
   private void demoFunctionality() {
