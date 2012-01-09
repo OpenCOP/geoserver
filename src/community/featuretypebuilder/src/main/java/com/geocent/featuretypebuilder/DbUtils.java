@@ -19,6 +19,21 @@ public class DbUtils {
 
   private DbUtils() { throw new AssertionError(); }  // don't instantiate
 
+  /**
+   * Two functions:
+   *
+   * 1.  "hello world" -> "hello_world"
+   * 2.  "1test"       -> "_1test"
+   *
+   * @param name
+   * @return
+   */
+  public static String fixName(String name) {
+    String n = name.toLowerCase().replace(" ", "_");
+    boolean startsWithNum = n.length() > 0 && Character.isDigit(n.charAt(0));
+    return startsWithNum ? "_" + n : n;
+  }
+
   public static void deleteTable(String tablename) {
     if(isTableExists(tablename)) {
       Db.update(String.format("drop table %s;", tablename));

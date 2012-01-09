@@ -17,25 +17,17 @@ public class Row implements Serializable {
    * @param type
    */
   public Row(String name, String type) {
-    this.name = correctName(name);
+    this.name = DbUtils.fixName(name);
     this.type = type;
   }
   public String getName() { return name; }
   public String getType() { return type; }
 
-  /**
-   * Two functions:
-   *
-   * 1.  "hello world" -> "hello_world"
-   * 2.  "1test"       -> "_1test"
-   *
-   * @param name
-   * @return
-   */
-  public static String correctName(String name) {
-    String n = name.toLowerCase().replace(" ", "_");
-    boolean startsWithNum = n.length() > 0 && Character.isDigit(n.charAt(0));
-    return startsWithNum ? "_" + n : n;
+  public boolean isValid() {
+    boolean hasName = !name.equals("");
+    boolean hasType = !name.equals("");
+    boolean hasRealType = !name.equals("Choose One");
+    return hasName && hasType && hasRealType;
   }
 
   @Override

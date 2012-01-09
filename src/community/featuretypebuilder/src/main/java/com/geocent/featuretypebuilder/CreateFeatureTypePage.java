@@ -72,14 +72,34 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
     @Override
     public final void onSubmit() {
       ValueMap values = getModelObject();
-
-      String layername = values.getString("layername");
+      String layername = DbUtils.fixName(values.getString("layername"));
       String namespace = values.getString("namespace");
       String style = values.getString("style");
-      List<Row> rows = parseSerialization(values.getString("serialized-fields"));
+      rows = parseSerialization(values.getString("serialized-fields"));
+
+      // guard valid layer/table name
+      if(layername.isEmpty()) {
+        error("layername not given");
+        return;
+      }
+
+      // guard valid rows
+      for (Row row : rows) {
+        if(!row.isValid()) {
+          error(String.format("Row with name '%s' and type '%s' is not valid.",
+                  row.getName(),
+                  row.getType()));
+          return;
+        }
+      }
+
+      // guard table already exists
+      if(DbUtils.isTableExists(layername)) {
+        error(String.format("Table of name '%s' already exists", layername));
+        return;
+      }
 
       DbUtils.createTable(layername, rows);
-
       info("Layer created.");
     }
 
