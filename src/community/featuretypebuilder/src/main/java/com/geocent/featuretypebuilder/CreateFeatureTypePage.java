@@ -11,12 +11,11 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
+import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.util.value.ValueMap;
 
 public class CreateFeatureTypePage extends GeoServerSecuredPage {
-
-  private String test = "test this";  // FOR DEVELOPMENT
 
   private static final List<String> TYPES = Arrays.asList(new String[] {
     "integer",
@@ -27,33 +26,45 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
     "geometry",
     "point"});
 
+  public final class FeatureTypeForm extends Form<ValueMap> {
+
+    public FeatureTypeForm(final String id) {
+      super(id, new CompoundPropertyModel<ValueMap>(new ValueMap()));  // no validation
+
+      add(new TextField<String>("comment").setType(String.class));
+
+      List<Row> rows = Arrays.asList(new Row[] {
+        new Row("id", "integer"),
+        new Row("version", "integer"),
+        new Row("description", "varchar(500)"),
+        new Row("the_geom", "geometry")
+      });
+
+      this.add(new ListView("schema", rows) {
+        protected void populateItem(ListItem item) {
+          Row row = (Row) item.getModelObject();
+          item.add(new TextField("name", new PropertyModel<String>(row, "name")));
+          item.add(new DropDownChoice<String>("type",
+                  new PropertyModel<String>(row, "type"), TYPES));
+        }
+      });
+    }
+
+    /**
+     * Show the resulting valid edit
+     */
+    @Override
+    public final void onSubmit() {
+      ValueMap values = getModelObject();
+
+      System.out.println("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * on submit");
+      System.out.println(values.toString());
+      System.out.println((String) values.get("comment"));
+    }
+  }
+
   public CreateFeatureTypePage() {
-
-    Form form = new Form("form") {
-      @Override
-      protected void onSubmit() {
-//        ValueMap values = (ValueMap) getModelObject();
-//        System.out.println(values.toString());
-        info("Saved model " + getDefaultModelObjectAsString());
-      }
-    };
-    add(form);
-
-    List<Row> rows = Arrays.asList(new Row[] {
-      new Row("id", "integer"),
-      new Row("version", "integer"),
-      new Row("description", "varchar(500)"),
-      new Row("the_geom", "geometry")
-    });
-
-    form.add(new ListView("schema", rows) {
-      protected void populateItem(ListItem item) {
-        Row row = (Row) item.getModelObject();
-        item.add(new TextField("name", new PropertyModel<String>(row, "name")));
-        item.add(new DropDownChoice<String>("type",
-                         new PropertyModel<String>(row, "type"), TYPES));
-      }
-    });
+    add(new FeatureTypeForm("featureTypeForm"));
   }
 
   private void demoFunctionality() {
