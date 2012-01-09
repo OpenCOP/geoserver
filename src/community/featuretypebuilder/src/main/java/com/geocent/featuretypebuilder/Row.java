@@ -15,4 +15,9 @@ public class Row implements Serializable {
   }
   public String getName() { return name; }
   public String getType() { return type; }
+
+  @Override
+  public String toString() {
+    return "Row{" + "name=" + name + ", type=" + type + '}';
+  }
 }

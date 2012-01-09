@@ -28,19 +28,20 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
 
   public final class FeatureTypeForm extends Form<ValueMap> {
 
+    List<Row> rows = Arrays.asList(new Row[] {
+      new Row("id", "integer"),
+      new Row("version", "integer"),
+      new Row("description", "varchar(500)"),
+      new Row("the_geom", "geometry")
+    });
+
     public FeatureTypeForm(final String id) {
       super(id, new CompoundPropertyModel<ValueMap>(new ValueMap()));  // no validation
 
       add(new TextField<String>("comment").setType(String.class));
 
-      List<Row> rows = Arrays.asList(new Row[] {
-        new Row("id", "integer"),
-        new Row("version", "integer"),
-        new Row("description", "varchar(500)"),
-        new Row("the_geom", "geometry")
-      });
-
-      this.add(new ListView("schema", rows) {
+      add(new ListView("schema", rows) {
+        @Override
         protected void populateItem(ListItem item) {
           Row row = (Row) item.getModelObject();
           item.add(new TextField("name", new PropertyModel<String>(row, "name")));
@@ -57,9 +58,13 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
     public final void onSubmit() {
       ValueMap values = getModelObject();
 
+
       System.out.println("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * on submit");
       System.out.println(values.toString());
       System.out.println((String) values.get("comment"));
+      System.out.println(values.get("schema"));
+      System.out.println(rows);
+      System.out.println("-----");
     }
   }
 
