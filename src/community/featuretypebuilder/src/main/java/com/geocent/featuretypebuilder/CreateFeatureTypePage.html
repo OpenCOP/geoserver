@@ -2,12 +2,22 @@
   <wicket:head>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script type="text/javascript">
-      console.log("this is the best!")
+
+var eoc = (function() {
+  return {
+    addField: function() {
+      $('tr.field:last').clone().appendTo('table.fields')
+      $('tr.field:last .name').val("")
+      $('tr.field:last .name').focus()
+    }
+  }
+}())
+
+
     </script>
   </wicket:head>
   <body>
     <wicket:extend>
-      <!-- DEVELOPMENT -->
       <form wicket:id="featureTypeForm">
         <label>layername</label>
         <input type="text" wicket:id="layername"></input>
@@ -15,11 +25,15 @@
         <input type="text" wicket:id="namespace"></input>
         <label>style</label>
         <input type="text" wicket:id="style"></input>
-        <table>
-          <tr wicket:id="schema">
+        <table class="fields">
+          <p>
+            <span class="fake-button" onclick="eoc.addField()">+</span>
+            Add field
+          </p>
+          <tr wicket:id="schema" class="field">
             <td>remove button</td>
-            <td><input type="text" wicket:id="name"></input></td>
-            <td><select wicket:id="type"></select></td>
+            <td><input type="text" wicket:id="name" class="name"></input></td>
+            <td><select wicket:id="type" class="type"></select></td>
           </tr>
         </table>
         <input type="submit" value="Save Feature Type" />
