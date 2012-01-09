@@ -3,6 +3,8 @@ package com.geocent.featuretypebuilder;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
@@ -24,9 +26,12 @@ public class DbUtils {
   }
 
   public static void createTable(String tablename, List<Row> rows) {
-    Db.update(String.format("create table %s (%s);",
-                              tablename,
-                              prettyRows(rows)));
+    String update = String.format("create table %s (%s);",
+                                    tablename,
+                                    prettyRows(rows));
+    Db.update(update);
+    Logger.getLogger(DbUtils.class.getName())
+      .log(Level.INFO, "Executed Query: {0}", update);
   }
 
   private static String prettyRows(List<Row> rows) {
