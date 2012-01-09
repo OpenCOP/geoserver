@@ -44,13 +44,17 @@ $(function() {
   <body>
     <wicket:extend>
       <form wicket:id="featureTypeForm" onsubmit="return eoc.onsubmit()">
-        <label>layername</label>
+        <label for="layername">layername</label>
         <input type="text" wicket:id="layername"></input>
-        <label>namespace</label>
-        <input type="text" wicket:id="namespace"></input>
-        <label>style</label>
+
+        <label for="storesDropDown">namespace</label>
+        <select wicket:id="storesDropDown"></select>
+
+        <label for="style">style</label>
         <input type="text" wicket:id="style"></input>
+
         <input type="hidden" wicket:id="serialized-fields"></input>
+
         <table class="fields">
           <p>
             <span class="fake-button" onclick="eoc.addField()">+</span>

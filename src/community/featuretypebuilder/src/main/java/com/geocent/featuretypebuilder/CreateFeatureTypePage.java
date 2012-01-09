@@ -6,18 +6,24 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.HiddenField;
+import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.CompoundPropertyModel;
+import org.apache.wicket.model.LoadableDetachableModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.util.value.ValueMap;
+import org.geoserver.catalog.StoreInfo;
 
 public class CreateFeatureTypePage extends GeoServerSecuredPage {
 
@@ -47,7 +53,15 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       super(id, new CompoundPropertyModel<ValueMap>(new ValueMap()));  // no validation
 
       add(new TextField<String>("layername").setType(String.class));
-      add(new TextField<String>("namespace").setType(String.class));
+//      add(new TextField<String>("namespace").setType(String.class));
+      DropDownChoice stores = new DropDownChoice(
+                                      "storesDropDown",
+                                      new Model(),
+                                      new StoreListModel(),
+                                      new StoreListChoiceRenderer());
+      stores.setOutputMarkupId(true);
+      add(stores);
+
       add(new TextField<String>("style").setType(String.class));
       add(new HiddenField<String>("serialized-fields")
                 .setType(String.class)
@@ -123,6 +137,42 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
         }
       }
       return rows;
+    }
+
+    // Class is moved to a public class in GeoServer 2.2.
+    // Repeating it here for compatibility.
+    final class StoreListModel extends LoadableDetachableModel {
+
+      @Override
+      protected Object load() {
+        List<StoreInfo> stores = getCatalog().getStores(StoreInfo.class);
+        stores = new ArrayList<StoreInfo>(stores);
+        Collections.sort(stores, new Comparator<StoreInfo>() {
+
+          public int compare(StoreInfo o1, StoreInfo o2) {
+            if (o1.getWorkspace().equals(o2.getWorkspace())) {
+              return o1.getName().compareTo(o2.getName());
+            }
+            return o1.getWorkspace().getName().compareTo(o2.getWorkspace().getName());
+          }
+        });
+        return stores;
+      }
+    }
+
+    // Class is moved to a public class in GeoServer 2.2.
+    // Repeating it here for compatibility.
+    final class StoreListChoiceRenderer implements IChoiceRenderer {
+
+      public Object getDisplayValue(Object store) {
+        StoreInfo info = (StoreInfo) store;
+        return new StringBuilder(info.getWorkspace().getName()).append(':').append(
+                info.getName());
+      }
+
+      public String getIdValue(Object store, int arg1) {
+        return ((StoreInfo) store).getId();
+      }
     }
   }
 
