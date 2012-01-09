@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.HiddenField;
@@ -71,6 +73,29 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       ValueMap values = getModelObject();
       System.out.println(values.toString());
       System.out.println(values.getString("serialized-fields"));
+      System.out.println(parseSerialization(values.getString("serialized-fields")));
+    }
+
+    private List<Row> parseSerialization(String serialization) {
+
+      // parses:
+      //   name1|type1|name2|type2|...
+      // into groups of
+      //   (name1, type1), (name2, type2), ...
+      String patternStr = "([a-zA-Z0-9_ ]*)\\|([a-zA-Z0-9_() ]*)\\|?";
+
+      Pattern pattern = Pattern.compile(patternStr);
+      Matcher matcher = pattern.matcher(serialization);
+
+      List<Row> rows = new ArrayList<Row>();
+      while (matcher.find()) {
+        if(matcher.groupCount() >= 2) {
+          String name = matcher.group(1);
+          String type = matcher.group(2);
+          rows.add(new Row(name, type));
+        }
+      }
+      return rows;
     }
   }
 

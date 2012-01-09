@@ -9,12 +9,25 @@ import java.io.Serializable;
 public class Row implements Serializable {
   private String name;
   private String type;
+
+  /**
+   * Does some work towards turning name into something valid.
+   *
+   * @param name
+   * @param type
+   */
   public Row(String name, String type) {
-    this.name = name;
+    this.name = correctName(name);
     this.type = type;
   }
   public String getName() { return name; }
   public String getType() { return type; }
+
+  private String correctName(String name) {
+    String n = name.toLowerCase().replace(" ", "_");
+    boolean startsWithNum = n.length() > 0 && Character.isDigit(n.charAt(0));
+    return startsWithNum ? "_" + n : n;
+  }
 
   @Override
   public String toString() {
