@@ -78,11 +78,6 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       String style = values.getString("style");
       List<Row> rows = parseSerialization(values.getString("serialized-fields"));
 
-      System.out.println("layername = " + layername);
-      System.out.println("namespace = " + namespace);
-      System.out.println("style = " + style);
-      System.out.println("rows = " + rows);
-
       DbUtils.createTable(layername, rows);
 
       info("Layer created.");
