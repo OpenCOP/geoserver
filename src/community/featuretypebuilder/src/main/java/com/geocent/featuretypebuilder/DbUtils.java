@@ -2,6 +2,10 @@ package com.geocent.featuretypebuilder;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * A collection of those commonly-used database operations. Shouldn't
@@ -17,6 +21,23 @@ public class DbUtils {
     if(isTableExists(tablename)) {
       Db.update(String.format("drop table %s;", tablename));
     }
+  }
+
+  public static void createTable(String tablename, List<Row> rows) {
+    Db.update(String.format("create table %s (%s);",
+                              tablename,
+                              prettyRows(rows)));
+  }
+
+  private static String prettyRows(List<Row> rows) {
+    List<String> rs = (List<String>) CollectionUtils.collect(rows, new Transformer() {
+      @Override
+      public Object transform(Object row) {
+        Row r = (Row) row;
+        return r.getName() + " " + r.getType();
+      }
+    });
+    return StringUtils.join(rs.toArray(), ", ");
   }
 
   public static boolean isTableExists(String tablename) {
