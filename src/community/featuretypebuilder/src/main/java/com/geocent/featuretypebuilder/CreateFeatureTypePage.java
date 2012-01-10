@@ -42,15 +42,29 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       "geometry",
       "point"});
 
-    List<Row> rows = new ArrayList(Arrays.asList(new Row[] {
-      new Row("id", "integer"),
-      new Row("version", "integer"),
-      new Row("description", "varchar(500)"),
-      new Row("the_geom", "geometry")
-    }));
+    ListView lv = null;
 
     public FeatureTypeForm(final String id) {
       super(id, new CompoundPropertyModel<ValueMap>(new ValueMap()));  // no validation
+
+      List<Row> rows = new ArrayList(Arrays.asList(new Row[] {
+        new Row("id", "integer"),
+        new Row("version", "integer"),
+        new Row("description", "varchar(500)"),
+        new Row("the_geom", "geometry")
+      }));
+
+      lv = new ListView("schema", rows) {
+        @Override
+        protected void populateItem(ListItem item) {
+          Row row = (Row) item.getModelObject();
+          item.add(new TextField("name", new PropertyModel<String>(row, "name")));
+          item.add(new DropDownChoice<String>(
+                              "type",
+                              new PropertyModel<String>(row, "type"),
+                              TYPES));
+        }
+      };
 
       add(new TextField<String>("layername").setType(String.class));
       add(new DropDownChoice(
@@ -62,17 +76,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       add(new HiddenField<String>("serialized-fields")
                 .setType(String.class)
                 .setOutputMarkupId(true));
-      add(new ListView("schema", rows) {
-        @Override
-        protected void populateItem(ListItem item) {
-          Row row = (Row) item.getModelObject();
-          item.add(new TextField("name", new PropertyModel<String>(row, "name")));
-          item.add(new DropDownChoice<String>(
-                            "type",
-                            new PropertyModel<String>(row, "type"),
-                            TYPES));
-        }
-      });
+      add(lv);
     }
 
     @Override
@@ -83,18 +87,30 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
 
       System.out.println("values = " + values.toString());
       System.out.println("store = " + store);
+      System.out.println("lv = " + lv);
+      System.out.println("lv.getModelObject() = " + lv.getModelObject());
 
       String style = values.getString("style");
-      rows = parseSerialization(values.getString("serialized-fields"));
+      List<Row> newRows = parseSerialization(values.getString("serialized-fields"));
 
-      // guard valid layer/table name
+      // refresh attrs model
+      List lvModel = lv.getModelObject();
+      lvModel.clear();
+      for (Row row: newRows) {
+        System.out.println("row = " + row);
+        lvModel.add(row);
+      }
+      System.out.println("--- now ---");
+      System.out.println("lvModel = " + lvModel);
+
+      // guard: valid layer/table name
       if(layername.isEmpty()) {
         error("Layer name not given");
         return;
       }
 
-      // guard valid rws
-      for (Row row : rows) {
+      // guard: valid rows
+      for (Row row : newRows) {
         if(!row.isValid()) {
           error(String.format("Row with name '%s' and type '%s' is not valid.",
                   row.getName(),
@@ -103,14 +119,14 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
         }
       }
 
-      // guard table already exists
+      // guard: table already exists
       if(DbUtils.isTableExists(layername)) {
         error(String.format("Table of name '%s' already exists", layername));
         return;
       }
 
       // create table
-      DbUtils.createTable(layername, rows);
+      DbUtils.createTable(layername, newRows);
 
       // confirm table creation
       if(DbUtils.isTableExists(layername)) {
