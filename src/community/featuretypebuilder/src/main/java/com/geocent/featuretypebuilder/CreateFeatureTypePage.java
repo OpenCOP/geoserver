@@ -53,24 +53,16 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       super(id, new CompoundPropertyModel<ValueMap>(new ValueMap()));  // no validation
 
       add(new TextField<String>("layername").setType(String.class));
-//      add(new TextField<String>("namespace").setType(String.class));
-      DropDownChoice stores = new DropDownChoice(
-                                      "storesDropDown",
-                                      new Model(),
-                                      new StoreListModel(),
-                                      new StoreListChoiceRenderer());
-      stores.setOutputMarkupId(true);
-      add(stores);
-
+      add(new DropDownChoice(
+                    "storesDropDown",
+                    new Model(),
+                    new StoreListModel(),
+                    new StoreListChoiceRenderer()).setOutputMarkupId(true));
       add(new TextField<String>("style").setType(String.class));
       add(new HiddenField<String>("serialized-fields")
                 .setType(String.class)
                 .setOutputMarkupId(true));
-      add(buildAttrsTable(rows));
-    }
-
-    private ListView buildAttrsTable(List<Row> rows) {
-      return new ListView("schema", rows) {
+      add(new ListView("schema", rows) {
         @Override
         protected void populateItem(ListItem item) {
           Row row = (Row) item.getModelObject();
@@ -80,24 +72,28 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
                             new PropertyModel<String>(row, "type"),
                             TYPES));
         }
-      };
+      });
     }
 
     @Override
     public final void onSubmit() {
       ValueMap values = getModelObject();
       String layername = DbUtils.fixName(values.getString("layername"));
-      String namespace = values.getString("namespace");
+      String store = values.getString("storesDropDown");
+
+      System.out.println("values = " + values.toString());
+      System.out.println("store = " + store);
+
       String style = values.getString("style");
       rows = parseSerialization(values.getString("serialized-fields"));
 
       // guard valid layer/table name
       if(layername.isEmpty()) {
-        error("layername not given");
+        error("Layer name not given");
         return;
       }
 
-      // guard valid rows
+      // guard valid rws
       for (Row row : rows) {
         if(!row.isValid()) {
           error(String.format("Row with name '%s' and type '%s' is not valid.",
@@ -113,30 +109,36 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
         return;
       }
 
+      // create table
       DbUtils.createTable(layername, rows);
-      info("Layer created.");
+
+      // confirm table creation
+      if(DbUtils.isTableExists(layername)) {
+        info(String.format("Layer '%s' created.", layername));
+        return;
+      } else {
+        error(String.format("Layer '%s' not created.", layername));
+      }
     }
 
+    /**
+     * Parses: name1|type1|name2|type2|...
+     * @param serialization
+     * @return
+     */
     private List<Row> parseSerialization(String serialization) {
-
-      // parses:
-      //   name1|type1|name2|type2|...
-      // into groups of
-      //   (name1, type1), (name2, type2), ...
       String patternStr = "([a-zA-Z0-9_ ]*)\\|([a-zA-Z0-9_() ]*)\\|?";
-
       Pattern pattern = Pattern.compile(patternStr);
       Matcher matcher = pattern.matcher(serialization);
-
-      List<Row> rows = new ArrayList<Row>();
+      List<Row> rws = new ArrayList<Row>();
       while (matcher.find()) {
         if(matcher.groupCount() >= 2) {
           String name = matcher.group(1);
           String type = matcher.group(2);
-          rows.add(new Row(name, type));
+          rws.add(new Row(name, type));
         }
       }
-      return rows;
+      return rws;
     }
 
     // Class is moved to a public class in GeoServer 2.2.
