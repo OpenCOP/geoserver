@@ -53,12 +53,13 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
     }));
 
     ListView lv = null;  // represents attrs list in form
+    DropDownChoice stores = null;
 
     public FeatureTypeForm(final String id) {
       super(id, new CompoundPropertyModel<ValueMap>(new ValueMap()));  // no validation
 
       add(new TextField<String>("layername").setType(String.class));
-      add(new DropDownChoice(
+      add(stores = (DropDownChoice) new DropDownChoice(
                     "storesDropDown",
                     new Model(),
                     new StoreListModel(),
@@ -86,7 +87,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       // grab values from form
       ValueMap values = getModelObject();
       String layername = DbUtils.fixName(values.getString("layername"));
-      String store = values.getString("storesDropDown");
+      StoreInfo storeInfo = (StoreInfo) stores.getModelObject();
       String style = values.getString("style");
       List<Row> rows = parseSerialization(values.getString("serialized-fields"));
 
@@ -94,6 +95,13 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       List lvModel = lv.getModelObject();
       lvModel.clear();
       for (Row row: rows) { lvModel.add(row); }
+
+      // guard: correct type
+      if(!storeInfo.getType().equals("PostGIS")) {
+        error(String.format("Store type '%s' is invalid.  Store must be of type 'PostGIS'.",
+                storeInfo.getType()));
+        return;
+      }
 
       // guard: valid layer/table name
       if(layername.isEmpty()) {
