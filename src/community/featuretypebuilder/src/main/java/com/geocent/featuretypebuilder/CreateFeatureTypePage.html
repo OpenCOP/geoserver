@@ -1,6 +1,17 @@
 <html>
   <wicket:head>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <style type="text/css">
+
+.fake-button {
+  background-color:#FCFCFC;
+  border:1px solid #CCCCCC;
+  cursor: pointer;
+  padding: 2px 6px;
+  color: #333333;
+}
+
+    </style>
     <script type="text/javascript">
 
 var eoc = (function() {
@@ -44,6 +55,7 @@ $(function() {
   <body>
     <wicket:extend>
       <form wicket:id="featureTypeForm" onsubmit="return eoc.onsubmit()">
+
         <label for="layername">layername</label>
         <input type="text" wicket:id="layername"></input>
 
@@ -55,11 +67,12 @@ $(function() {
 
         <input type="hidden" wicket:id="serialized-fields"></input>
 
+        <p>
+          <span class="fake-button" onclick="eoc.addField()">+</span>
+          Add field
+        </p>
+
         <table class="fields">
-          <p>
-            <span class="fake-button" onclick="eoc.addField()">+</span>
-            Add field
-          </p>
           <tr wicket:id="schema" class="field">
             <td><span class="fake-button" onclick="eoc.deleteField(this)">-</span></td>
             <td><input type="text" wicket:id="name" class="name"></input></td>

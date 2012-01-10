@@ -1,6 +1,5 @@
 package com.geocent.featuretypebuilder;
 
-import java.util.Collection;
 import org.geoserver.web.GeoServerSecuredPage;
 import org.apache.wicket.markup.html.basic.Label;
 import java.sql.ResultSet;
@@ -11,12 +10,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
-import org.apache.commons.collections.list.SetUniqueList;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.HiddenField;
@@ -204,26 +201,4 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       }
     }
   }
-
-  private void demoFunctionality() {
-    add(new Label("hellolabel", "hello world"));
-
-    Db.query("select default_graphic_size, version from test;", new ResultSetCallback() {
-      public Object fn(ResultSet rs) throws SQLException {
-        while (rs.next()) {
-          System.out.print("default_graphic_size");
-          System.out.println(rs.getString("default_graphic_size"));
-          System.out.print("version");
-          System.out.println(rs.getString("version"));
-        }
-        return null;
-      }
-    });
-//    Db.update("create table test3 (id integer, whatever varchar(20));");
-    DbUtils.deleteTable("test2");
-    System.out.println("table exists");
-    System.out.println(DbUtils.isTableExists("test"));
-    System.out.println(DbUtils.isTableExists("test3"));
-  }
-
 }

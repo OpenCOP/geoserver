@@ -49,6 +49,13 @@ public class DbUtils {
       .log(Level.INFO, "Executed Query: {0}", update);
   }
 
+  /**
+   * Return a string representing rows, suitable for dropping in a
+   * "create table" expression.
+   *
+   * @param rows
+   * @return
+   */
   private static String prettyRows(List<Row> rows) {
     List<String> rs = (List<String>) CollectionUtils.collect(rows, new Transformer() {
       @Override
