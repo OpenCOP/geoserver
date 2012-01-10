@@ -95,7 +95,13 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       lvModel.clear();
       for (Row row: rows) { lvModel.add(row); }
 
-      // guard: correct type
+      // guard: user selected a store type
+      if(storeInfo == null || storeInfo.getType() == null) {
+        error("You must select a data store.");
+        return ;
+      }
+
+      // guard: correct store type
       if(!storeInfo.getType().equals("PostGIS")) {
         error(String.format("Store type '%s' is invalid.  Store must be of type 'PostGIS'.",
                 storeInfo.getType()));
@@ -132,6 +138,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
 
       // create table
       DbUtils.createTable(storeInfo, layername, rows);
+//      DbUtils.registerGeometryColumn(storeInfo, layername, "the_geom", "POINT", "4326");
 
       // confirm table creation
       if(DbUtils.isTableExists(storeInfo, layername)) {

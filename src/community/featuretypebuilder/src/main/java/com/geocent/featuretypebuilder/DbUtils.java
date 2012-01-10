@@ -50,6 +50,34 @@ public class DbUtils {
       .log(Level.INFO, "Executed Query: {0}", update);
   }
 
+  public static void registerGeometryColumn(StoreInfo storeInfo,
+                                            String tableName,
+                                            String geometryColumnName,
+                                            String type,
+                                            String projection) {
+    System.out.println("got this far");
+    String queryTemplate =
+      "insert into geometry_columns ( "
+        + "f_table_catalog, "
+        + "f_table_schema, "
+        + "f_table_name, "
+        + "f_geometry_column, "
+        + "coord_dimension, "
+        + "srid, "
+        + "type "
+      + ") values ( '', public, '%s', '%s', 2, %s, '%s' );";
+    System.out.println("got this far  222");
+    String query = String.format(queryTemplate,
+                                          tableName,
+                                          geometryColumnName,
+                                          projection,
+                                          type);
+    System.out.println("got this far  2333");
+    Logger.getLogger(DbUtils.class.getName())
+      .log(Level.INFO, "Executed update: {0}", query);
+    Db.update(storeInfo, query);
+  }
+
   /**
    * Return a string representing rows, suitable for dropping in a
    * "create table" expression.
