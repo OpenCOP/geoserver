@@ -136,9 +136,15 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
         return;
       }
 
+      // guard: geometry_columns needs to exist
+      if(!DbUtils.isTableExists(storeInfo, "geometry_columns")) {
+        error("The table 'geometry_columns' doesn't exist on this data store.");
+        return;
+      }
+
       // create table
       DbUtils.createTable(storeInfo, layername, rows);
-//      DbUtils.registerGeometryColumn(storeInfo, layername, "the_geom", "POINT", "4326");
+      DbUtils.registerGeometryColumn(storeInfo, layername, "POINT", "4326");
 
       // confirm table creation
       if(DbUtils.isTableExists(storeInfo, layername)) {
