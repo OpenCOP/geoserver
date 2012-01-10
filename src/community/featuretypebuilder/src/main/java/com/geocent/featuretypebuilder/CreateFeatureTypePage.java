@@ -1,9 +1,6 @@
 package com.geocent.featuretypebuilder;
 
 import org.geoserver.web.GeoServerSecuredPage;
-import org.apache.wicket.markup.html.basic.Label;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,18 +35,20 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
 
     private final List<String> TYPES = Arrays.asList(new String[] {
       "integer",
+      "varchar(5)",
       "varchar(20)",
       "varchar(500)",
       "text",
       "boolean",
-      "geometry",
-      "point"});
+      "LINE",
+      "POLYGON",
+      "POINT"});
 
     List<Row> defaultRows = new ArrayList(Arrays.asList(new Row[] {
       new Row("id", "integer"),
       new Row("version", "integer"),
       new Row("description", "varchar(500)"),
-      new Row("the_geom", "geometry")
+      new Row("the_geom", "POINT")
     }));
 
     ListView lv = null;  // represents attrs list in form
