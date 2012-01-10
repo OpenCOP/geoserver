@@ -1,12 +1,15 @@
 package com.geocent.featuretypebuilder;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.geoserver.catalog.StoreInfo;
 
 /**
  * Fundamental operations on the OpenCOP database.
@@ -14,10 +17,6 @@ import java.util.logging.Logger;
  * @author thanthese
  */
 public class Db {
-
-  private static String username = "opencop";
-  private static String password = "password";
-  private static String database = "dynamic_feature";
 
   private Db() { throw new AssertionError(); }  // don't instantiate
 
@@ -29,13 +28,13 @@ public class Db {
    * @param fn Callback that takes ResultSet.
    * @return Whatever fn returns.
    */
-  public static Object query(String query, ResultSetCallback fn) {
+  public static Object query(StoreInfo storeInfo, String query, ResultSetCallback fn) {
     Connection conn = null;
     Statement stmt = null;
     ResultSet rs = null;
     Object result = null;
     try {
-      conn = getConnection();
+      conn = getConnection(storeInfo);
       stmt = conn.createStatement();
       rs = stmt.executeQuery(query);
       result = fn.fn(rs);
@@ -72,11 +71,11 @@ public class Db {
    *
    * @param update
    */
-  public static void update(String update) {
+  public static void update(StoreInfo storeInfo, String update) {
     Connection conn = null;
     Statement stmt = null;
     try {
-      conn = getConnection();
+      conn = getConnection(storeInfo);
       stmt = conn.createStatement();
       stmt.executeUpdate(update);
     } catch (SQLException ex) {
@@ -99,7 +98,7 @@ public class Db {
     }
   }
 
-  private static Connection getConnection() {
+  private static Connection getConnection(StoreInfo storeInfo) {
     // Confirm Driver is registered with DriverManager.
     try {
       Class.forName("org.postgresql.Driver");
@@ -109,11 +108,12 @@ public class Db {
     }
 
     Connection conn = null;
+    Map<String, Serializable> params = storeInfo.getConnectionParameters();
     try {
       conn = DriverManager.getConnection(
-              "jdbc:postgresql://localhost/" + database,
-              username,
-              password);
+              "jdbc:postgresql://localhost/" + (String) params.get("database"),
+              (String) params.get("user"),
+              (String) params.get("passwd"));
     } catch (SQLException ex) {
       Logger.getLogger(CreateFeatureTypePage.class.getName()).
               log(Level.SEVERE, null, ex);

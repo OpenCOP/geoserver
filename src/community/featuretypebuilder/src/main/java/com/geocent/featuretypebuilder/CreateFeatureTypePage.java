@@ -126,16 +126,16 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       }
 
       // guard: doesn't already exist
-      if(DbUtils.isTableExists(layername)) {
+      if(DbUtils.isTableExists(storeInfo, layername)) {
         error(String.format("Table of name '%s' already exists", layername));
         return;
       }
 
       // create table
-      DbUtils.createTable(layername, rows);
+      DbUtils.createTable(storeInfo, layername, rows);
 
       // confirm table creation
-      if(DbUtils.isTableExists(layername)) {
+      if(DbUtils.isTableExists(storeInfo, layername)) {
         info(String.format("Layer '%s' created.", layername));
         return;
       } else {

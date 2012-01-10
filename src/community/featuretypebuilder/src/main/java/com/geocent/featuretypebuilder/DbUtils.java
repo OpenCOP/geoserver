@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
+import org.geoserver.catalog.StoreInfo;
 
 /**
  * A collection of those commonly-used database operations. Shouldn't
@@ -34,17 +35,17 @@ public class DbUtils {
     return startsWithNum ? "_" + n : n;
   }
 
-  public static void deleteTable(String tablename) {
-    if(isTableExists(tablename)) {
-      Db.update(String.format("drop table %s;", tablename));
+  public static void deleteTable(StoreInfo storeInfo, String tablename) {
+    if(isTableExists(storeInfo, tablename)) {
+      Db.update(storeInfo, String.format("drop table %s;", tablename));
     }
   }
 
-  public static void createTable(String tablename, List<Row> rows) {
+  public static void createTable(StoreInfo storeInfo, String tablename, List<Row> rows) {
     String update = String.format("create table %s (%s);",
                                     tablename,
                                     prettyRows(rows));
-    Db.update(update);
+    Db.update(storeInfo, update);
     Logger.getLogger(DbUtils.class.getName())
       .log(Level.INFO, "Executed Query: {0}", update);
   }
@@ -67,13 +68,14 @@ public class DbUtils {
     return StringUtils.join(rs.toArray(), ", ");
   }
 
-  public static boolean isTableExists(String tablename) {
+  public static boolean isTableExists(StoreInfo storeInfo, String tablename) {
     String query = String.format(
         "SELECT count(table_name) as count "
         + "FROM information_schema.tables "
         + "WHERE table_schema = 'public' "
         + "AND table_name = '%s';", tablename);
-    return (Boolean) Db.query(query, new ResultSetCallback() {
+    return (Boolean) Db.query(storeInfo, query, new ResultSetCallback() {
+      @Override
       public Object fn(ResultSet rs) throws SQLException {
         rs.next();
         return rs.getInt("count") == 1;
