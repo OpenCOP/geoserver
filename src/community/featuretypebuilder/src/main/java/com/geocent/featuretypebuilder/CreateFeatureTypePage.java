@@ -20,11 +20,14 @@ import java.util.regex.Pattern;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.Transformer;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.HiddenField;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.CompoundPropertyModel;
@@ -39,6 +42,9 @@ import org.geoserver.catalog.LayerInfo;
 import org.geoserver.catalog.StoreInfo;
 import org.geoserver.web.data.resource.ResourceConfigurationPage;
 import org.geoserver.web.wicket.ParamResourceModel;
+//import org.geoserver.wms.web.publish.LegendGraphicAjaxUpdater;
+import org.geoserver.wms.web.publish.StyleChoiceRenderer;
+import org.geoserver.wms.web.publish.StylesModel;
 import org.geotools.data.DataStore;
 import org.geotools.data.FeatureSource;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -120,6 +126,31 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
                   TYPES));
         }
       });
+
+      // default style chooser. A default style is required
+//      StylesModel styles = new StylesModel();
+//      final PropertyModel defaultStyleModel = new PropertyModel(layerModel, "defaultStyle");
+//      final DropDownChoice defaultStyle = new DropDownChoice("defaultStyle", defaultStyleModel,
+//              styles, new StyleChoiceRenderer());
+//      defaultStyle.setRequired(true);
+//      add(defaultStyle);
+//
+//      final Image defStyleImg = new Image("defaultStyleLegendGraphic");
+//      defStyleImg.setOutputMarkupId(true);
+//      add(defStyleImg);
+//
+//      String wmsURL = getRequest().getRelativePathPrefixToContextRoot();
+//      wmsURL += wmsURL.endsWith("/") ? "wms?" : "/wms?";
+//      final LegendGraphicAjaxUpdater defaultStyleUpdater;
+//      defaultStyleUpdater = new LegendGraphicAjaxUpdater(wmsURL, defStyleImg, defaultStyleModel);
+//
+//      defaultStyle.add(new OnChangeAjaxBehavior() {
+//
+//        @Override
+//        protected void onUpdate(AjaxRequestTarget target) {
+//          defaultStyleUpdater.updateStyleImage(target);
+//        }
+//      });
     }
 
     @Override
