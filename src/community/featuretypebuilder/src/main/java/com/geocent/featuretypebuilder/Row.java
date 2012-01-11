@@ -30,6 +30,15 @@ public class Row implements Serializable {
     return hasName && hasType && hasRealType;
   }
 
+  public boolean isGeometryType() {
+    return type.equals("POINT")
+        || type.equals("LINE")
+        || type.equals("POLYGON")
+        || type.equals("MULTIPOINT")
+        || type.equals("MULTILINE")
+        || type.equals("MULTIPOLYGON");
+  }
+
   @Override
   public String toString() {
     return "Row{" + "name=" + name + ", type=" + type + '}';

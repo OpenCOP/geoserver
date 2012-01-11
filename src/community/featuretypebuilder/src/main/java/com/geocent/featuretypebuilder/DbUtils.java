@@ -91,19 +91,33 @@ public class DbUtils {
     return StringUtils.join(rs.toArray(), ", ");
   }
 
+  /**
+   * An anonymous function that returns the integer value of the first
+   * "count" field. Useful for extracting the value from a "count(*)"
+   * query.
+   */
+  public static class FirstCount implements ResultSetCallback {
+    public Object fn(ResultSet rs) throws SQLException {
+      rs.next();
+      return rs.getInt("count");
+    }
+  }
+
+  public static boolean isGeometryColumnRegistered(StoreInfo storeInfo, String tableName) {
+    String query = String.format(
+            "SELECT count(*) "
+            + "FROM geometry_columns "
+            + "WHERE f_table_name = '%s';", tableName);
+    return (Integer) Db.query(storeInfo, query, new FirstCount()) > 0;
+  }
+
   public static boolean isTableExists(StoreInfo storeInfo, String tablename) {
     String query = String.format(
-        "SELECT count(table_name) as count "
+        "SELECT count(*) "
         + "FROM information_schema.tables "
         + "WHERE table_schema = 'public' "
         + "AND table_name = '%s';", tablename);
-    return (Boolean) Db.query(storeInfo, query, new ResultSetCallback() {
-      @Override
-      public Object fn(ResultSet rs) throws SQLException {
-        rs.next();
-        return rs.getInt("count") == 1;
-      }
-    });
+    return (Integer) Db.query(storeInfo, query, new FirstCount()) > 0;
 
   }
 }

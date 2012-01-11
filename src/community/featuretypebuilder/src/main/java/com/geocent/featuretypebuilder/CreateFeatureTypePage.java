@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.Transformer;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
@@ -136,23 +137,63 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
         return;
       }
 
-      // guard: geometry_columns needs to exist
-      if(!DbUtils.isTableExists(storeInfo, "geometry_columns")) {
-        error("The table 'geometry_columns' doesn't exist on this data store.");
-        return;
+      // guard: if the_geom exists...
+      Row the_geom = getTheGeom(rows);
+      if(the_geom != null) {
+
+        // guard: geometry_columns needs to exist
+        if(!DbUtils.isTableExists(storeInfo, "geometry_columns")) {
+          error("The table 'geometry_columns' doesn't exist on this data store.");
+          return;
+        }
+
+        // guard: the_geom must have a geometry type
+        if(!the_geom.isGeometryType()) {
+          error("Field 'the_geom' must have a geometry type.");
+          return;
+        }
+
+        // guard: the geometry column needs to not already be registered
+        if(DbUtils.isGeometryColumnRegistered(storeInfo, layername)) {
+          error(String.format(
+            "A geometry column has already been registered for table '%s'."
+            , layername));
+          return;
+        }
       }
 
       // create table
       DbUtils.createTable(storeInfo, layername, rows);
-      DbUtils.registerGeometryColumn(storeInfo, layername, "POINT", "4326");
+      if(the_geom != null) {
+        DbUtils.registerGeometryColumn(storeInfo,
+                                        layername,
+                                        the_geom.getType(),
+                                        "4326");
+      }
 
       // confirm table creation
-      if(DbUtils.isTableExists(storeInfo, layername)) {
-        info(String.format("Layer '%s' created.", layername));
-        return;
-      } else {
+      if(!DbUtils.isTableExists(storeInfo, layername)) {
         error(String.format("Layer '%s' not created.", layername));
+        return;
       }
+
+      // confirm geometry registered
+      if(the_geom != null && !DbUtils.isGeometryColumnRegistered(storeInfo, layername)) {
+        error("The layer was created, but the geometry column was not registered properly.");
+        return;
+      }
+
+      info(String.format("Layer '%s' created.", layername));
+    }
+
+    private Row getTheGeom(List<Row> rows) {
+      return (Row) CollectionUtils.find(rows, new Predicate() {
+        @Override
+        public boolean evaluate(Object object) {
+          return ((Row) object).getName().equals("the_geom");
+        }
+      });
+
     }
 
     private boolean isAllNamesUnique(List<Row> rows) {
