@@ -114,12 +114,16 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       LENGTHS.put("POLYGON", 0);
       LENGTHS.put("POINT", 0);
 
-      add(new TextField<String>("layername").setType(String.class));
+      add(new TextField<String>("layername")
+              .setType(String.class)
+              .setRequired(true));
       add(stores = (DropDownChoice) new DropDownChoice(
               "storesDropDown",
               new Model(),
               new StoreListModel(),
-              new StoreListChoiceRenderer()).setOutputMarkupId(true));
+              new StoreListChoiceRenderer())
+            .setRequired(true)
+            .setOutputMarkupId(true));
       add(new TextField<String>("style").setType(String.class));
       add(new HiddenField<String>("serialized-fields").setType(String.class).setOutputMarkupId(true));
       add(lv = new ListView("schema", defaultRows) {
@@ -180,22 +184,10 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
         lvModel.add(row);
       }
 
-      // guard: user selected a store type
-      if (storeInfo == null || storeInfo.getType() == null) {
-        error("You must select a data store.");
-        return;
-      }
-
       // guard: correct store type
       if (!storeInfo.getType().equals("PostGIS")) {
         error(String.format("Store type '%s' is invalid.  Store must be of type 'PostGIS'.",
                 storeInfo.getType()));
-        return;
-      }
-
-      // guard: valid layer/table name
-      if (layername.isEmpty()) {
-        error("Layer name not given");
         return;
       }
 
@@ -215,7 +207,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
         return;
       }
 
-      // guard: doesn't already exist
+      // guard: table doesn't already exist
       if (DbUtils.isTableExists(storeInfo, layername)) {
         error(String.format("Table of name '%s' already exists", layername));
         return;
@@ -225,7 +217,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       Row the_geom = getTheGeom(rows);
       if(the_geom != null) {
 
-        // guard: geometry_columns needs to exist
+        // guard: geometry_columns table needs to exist in database
         if(!DbUtils.isTableExists(storeInfo, "geometry_columns")) {
           error("The table 'geometry_columns' doesn't exist on this data store.");
           return;
