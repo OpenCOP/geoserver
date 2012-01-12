@@ -3,24 +3,20 @@ package org.geoserver.uploadshapefileui;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.form.upload.FileUpload;
 import org.apache.wicket.markup.html.form.upload.FileUploadField;
-import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.util.lang.Bytes;
 import org.geoserver.catalog.StoreInfo;
 import org.geoserver.web.GeoServerSecuredPage;
+import org.geoserver.web.data.store.StoreListChoiceRenderer;
+import org.geoserver.web.data.store.StoreListModel;
 
 public class UploadShapefilePage extends GeoServerSecuredPage {
 
@@ -85,41 +81,5 @@ public class UploadShapefilePage extends GeoServerSecuredPage {
     stores.setOutputMarkupId(true);
     form.add(stores);
 
-  }
-
-  // Class is moved to a public class in GeoServer 2.2.
-  // Repeating it here for compatibility.
-  final class StoreListModel extends LoadableDetachableModel {
-
-    @Override
-    protected Object load() {
-      List<StoreInfo> stores = getCatalog().getStores(StoreInfo.class);
-      stores = new ArrayList<StoreInfo>(stores);
-      Collections.sort(stores, new Comparator<StoreInfo>() {
-
-        public int compare(StoreInfo o1, StoreInfo o2) {
-          if (o1.getWorkspace().equals(o2.getWorkspace())) {
-            return o1.getName().compareTo(o2.getName());
-          }
-          return o1.getWorkspace().getName().compareTo(o2.getWorkspace().getName());
-        }
-      });
-      return stores;
-    }
-  }
-
-  // Class is moved to a public class in GeoServer 2.2.
-  // Repeating it here for compatibility.
-  static final class StoreListChoiceRenderer implements IChoiceRenderer {
-
-    public Object getDisplayValue(Object store) {
-      StoreInfo info = (StoreInfo) store;
-      return new StringBuilder(info.getWorkspace().getName()).append(':').append(
-              info.getName());
-    }
-
-    public String getIdValue(Object store, int arg1) {
-      return ((StoreInfo) store).getId();
-    }
   }
 }
