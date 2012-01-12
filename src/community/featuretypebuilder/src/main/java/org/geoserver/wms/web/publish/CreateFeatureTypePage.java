@@ -124,7 +124,6 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
               new StoreListChoiceRenderer())
             .setRequired(true)
             .setOutputMarkupId(true));
-      add(new TextField<String>("style").setType(String.class));
       add(new HiddenField<String>("serialized-fields").setType(String.class).setOutputMarkupId(true));
       add(lv = new ListView("schema", defaultRows) {
         @Override
