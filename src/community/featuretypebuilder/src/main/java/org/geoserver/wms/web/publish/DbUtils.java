@@ -2,6 +2,7 @@ package org.geoserver.wms.web.publish;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -131,11 +132,6 @@ public class DbUtils {
    * Create the rule that sets the edit_url for every row on tableName
    * after insert.
    *
-   * Assumes:
-   * 1.  Table exists
-   * 2.  Table has edit_url field
-   * 3.  Table has fid field as id field.
-   *
    * @param si
    * @param tableName
    * @param domain e.g.: "demo.geocent.com"
@@ -185,5 +181,39 @@ public class DbUtils {
                 si.getName().equals(storeName);
       }
     });
+  }
+
+  public static List<Row> allFields(StoreInfo storeInfo, String tableName) {
+    String query = "SELECT "
+          + "a.attname AS name, "
+          + "t.typname AS type  "
+        + "FROM pg_class c, pg_attribute a, pg_type t "
+        + "WHERE c.relname = '" + tableName + "' "
+          + "and a.attnum > 0 "
+          + "and a.attrelid = c.oid "
+          + "and a.atttypid = t.oid "
+        + "ORDER BY a.attnum; ";
+    return (List<Row>) Db.query(storeInfo, query, new ResultSetCallback() {
+      @Override
+      public Object fn(ResultSet rs) throws SQLException {
+        List<Row> rows = new ArrayList<Row>();
+        while(rs.next()) {
+          rows.add(new Row(rs.getString("name"), rs.getString("type")));
+        }
+        return rows;
+      }
+    });
+  }
+
+  public static boolean hasField(StoreInfo storeInfo,
+                                  String tableName,
+                                  final String fieldName) {
+    List<Row> rows = allFields(storeInfo, tableName);
+    return CollectionUtils.find(rows, new Predicate() {
+        @Override
+        public boolean evaluate(Object object) {
+          return ((Row) object).getName().equals(fieldName);
+        }
+      }) != null;
   }
 }

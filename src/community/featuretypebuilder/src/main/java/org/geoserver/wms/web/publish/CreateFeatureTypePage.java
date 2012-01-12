@@ -285,7 +285,10 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
         layerInfo.setDefaultStyle(styleInfo);
 
         // Create rule
-        DbUtils.createEditUrlRule(storeInfo, layername);
+        if(DbUtils.hasField(storeInfo, layername, "edit_url")
+                && DbUtils.hasField(storeInfo, layername, "fid")) {
+          DbUtils.createEditUrlRule(storeInfo, layername);
+        }
 
         // Redirect user to the layer edit page.
         // At this point the layer is not persisted. Only after the user clicks
