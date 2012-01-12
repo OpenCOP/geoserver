@@ -82,11 +82,11 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
     private Map<String, Integer> LENGTHS = new TreeMap<String, Integer>();
 
     List<Row> defaultRows = new ArrayList(Arrays.asList(new Row[]{
-              new Row("id", "integer"),
               new Row("version", "integer"),
               new Row("description", "varchar(500)"),
-              new Row("the_geom", "POINT")
-            }));
+              new Row("edit_url", "varchar(500)"),
+              new Row("the_geom", "POINT")}));
+
     ListView lv = null;  // represents attrs list in form
     DropDownChoice stores = null;
     Model defaultStyleModel = null;
@@ -103,7 +103,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       BINDINGS.put("LINE", LineString.class);
       BINDINGS.put("POLYGON", Polygon.class);
       BINDINGS.put("POINT", Point.class);
-      
+
       LENGTHS.put("integer", 0);
       LENGTHS.put("varchar(5)", 5);
       LENGTHS.put("varchar(20)", 20);
@@ -123,7 +123,6 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       add(new TextField<String>("style").setType(String.class));
       add(new HiddenField<String>("serialized-fields").setType(String.class).setOutputMarkupId(true));
       add(lv = new ListView("schema", defaultRows) {
-
         @Override
         protected void populateItem(ListItem item) {
           Row row = (Row) item.getModelObject();
@@ -174,7 +173,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       StyleInfo styleInfo = (StyleInfo) defaultStyleModel.getObject();
       List<Row> rows = parseSerialization(values.getString("serialized-fields"));
 
-      // refresh attrs model (if failure we'll have to refresh the form)
+      // refresh attrs model
       List lvModel = lv.getModelObject();
       lvModel.clear();
       for (Row row : rows) {
@@ -222,7 +221,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
         return;
       }
 
-            // guard: if the_geom exists...
+      // guard: if the_geom exists...
       Row the_geom = getTheGeom(rows);
       if(the_geom != null) {
 
@@ -267,24 +266,27 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       try {
         // Convert the rows to a SimpleFeatureType
         SimpleFeatureType featureType = buildFeatureType(rows, layername);
-        // Persist the SimpleFeatureType to the datastore 
+        // Persist the SimpleFeatureType to the datastore
         ds.createSchema(featureType);
 
         CatalogBuilder builder = new CatalogBuilder(getCatalog());
         builder.setStore(dsInfo);
-        
+
         // Build the geoserver feature type object
         FeatureTypeInfo fti = builder.buildFeatureType(getFeatureSource(ds, layername));
         // Set the bounding boxes to makes things happy
         ReferencedEnvelope world = new ReferencedEnvelope(-180, 180, -90, 90, WGS84);
         fti.setLatLonBoundingBox(world);
         fti.setNativeBoundingBox(world);
-        
+
         // Build the geoserver layer object
         LayerInfo layerInfo = builder.buildLayer(fti);
         // Set the default style to the one selected by the user
         layerInfo.setDefaultStyle(styleInfo);
-        
+
+        // Create rule
+        DbUtils.createEditUrlRule(storeInfo, layername);
+
         // Redirect user to the layer edit page.
         // At this point the layer is not persisted. Only after the user clicks
         // save on the edit page.
@@ -359,7 +361,6 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
 
     private boolean isAllNamesUnique(List<Row> rows) {
       List<Row> names = (List<Row>) CollectionUtils.collect(rows, new Transformer() {
-
         @Override
         public Object transform(Object row) {
           return ((Row) row).getName();
