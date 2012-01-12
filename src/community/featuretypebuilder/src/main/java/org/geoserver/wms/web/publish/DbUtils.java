@@ -209,11 +209,11 @@ public class DbUtils {
                                   String tableName,
                                   final String fieldName) {
     List<Row> rows = allFields(storeInfo, tableName);
-    return CollectionUtils.find(rows, new Predicate() {
+    return CollectionUtils.exists(rows, new Predicate() {
         @Override
         public boolean evaluate(Object object) {
           return ((Row) object).getName().equals(fieldName);
         }
-      }) != null;
+      });
   }
 }

@@ -4,7 +4,9 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.logging.Logger;
 import org.geoserver.web.GeoServerSecuredPage;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +39,7 @@ import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.LayerInfo;
 import org.geoserver.catalog.StoreInfo;
 import org.geoserver.catalog.StyleInfo;
+import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.data.resource.ResourceConfigurationPage;
 import org.geoserver.web.data.store.StoreListChoiceRenderer;
 import org.geoserver.web.data.store.StoreListModel;
@@ -63,6 +66,88 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
 
   public CreateFeatureTypePage() {
     add(new FeatureTypeForm("featureTypeForm"));
+  }
+
+  private StyleInfo createNewStyle(final String styleName, String styleDefaultGraphic) {
+
+    // grab the styleInfo if it already exists
+    StyleInfo styleInfo = (StyleInfo) CollectionUtils.find(
+      GeoServerApplication.get().getCatalog().getStyles(),
+      new Predicate() { public boolean evaluate(Object object) {
+        return ((StyleInfo) object).getName().equals(styleName); }});
+
+    // guard: return the styleInfo if it already exists
+    if(styleInfo != null) {
+      Logger.getLogger(CreateFeatureTypePage.class.getName())
+              .log(Level.INFO, String.format(
+                                  "StyleInfo '%s' already exists.",
+                                  styleInfo.getName()));
+      return styleInfo;
+    }
+
+    // create new style
+    styleInfo = getCatalog().getFactory().createStyle();
+    styleInfo.setName(styleName);
+    styleInfo.setFilename(styleInfo.getName() + ".sld");
+    String styleXml = getStyle(styleName, styleDefaultGraphic);
+
+    // write out SLD
+    try {
+      getCatalog().getResourcePool().writeStyle(styleInfo,
+                              new ByteArrayInputStream(styleXml.getBytes()));
+    } catch (IOException ex) {
+      Logger.getLogger(CreateFeatureTypePage.class.getName()).
+              log(Level.SEVERE, null, ex);
+    }
+
+    // register style with catalog
+    getCatalog().add(styleInfo);
+
+    Logger.getLogger(CreateFeatureTypePage.class.getName())
+            .log(Level.INFO, String.format(
+                                "Created new style: '%s'",
+                                styleInfo.getName()));
+    return styleInfo;
+  }
+
+  private String getStyle(String stylename, String defaultGraphicUrl) {
+    return String.format("<?xml version=\"1.0\" encoding=\"utf-8\"?> "
+      + "<sld:StyledLayerDescriptor version=\"1.0.0\" "
+                                 + "xmlns=\"http://www.opengis.net/sld\" "
+                                 + "xmlns:gml=\"http://www.opengis.net/gml\" "
+                                 + "xmlns:ogc=\"http://www.opengis.net/ogc\" "
+                                 + "xmlns:sld=\"http://www.opengis.net/sld\"> "
+        + "<sld:NamedLayer> "
+          + "<sld:Name>%s</sld:Name> "
+          + "<sld:UserStyle> "
+            + "<sld:Name>%s</sld:Name> "
+            + "<sld:Title>%s</sld:Title> "
+            + "<sld:Abstract>Default Point Style</sld:Abstract> "
+            + "<sld:FeatureTypeStyle> "
+              + "<sld:Name>name</sld:Name> "
+              + "<sld:Rule> "
+                + "<sld:Name>Default Graphic Rule</sld:Name> "
+                + "<sld:Title>Default Graphic Rule</sld:Title> "
+                + "<sld:PointSymbolizer> "
+                  + "<sld:Graphic> "
+                    + "<sld:ExternalGraphic> "
+                      + "<sld:OnlineResource xlink:href=\"%s\" "
+                                          + "xlink:type=\"simple\" "
+                                          + "xmlns:xlink=\"http://www.w3.org/1999/xlink\" /> "
+                      + "<sld:Format>image/png</sld:Format> "
+                    + "</sld:ExternalGraphic> "
+                    + "<sld:Size>24</sld:Size> "
+                  + "</sld:Graphic> "
+                + "</sld:PointSymbolizer> "
+              + "</sld:Rule> "
+            + "</sld:FeatureTypeStyle> "
+          + "</sld:UserStyle> "
+        + "</sld:NamedLayer> "
+      + "</sld:StyledLayerDescriptor> ",
+      stylename,
+      stylename,
+      stylename,
+      defaultGraphicUrl);
   }
 
   public final class FeatureTypeForm extends Form<ValueMap> {
@@ -137,7 +222,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
         }
       });
 
-      // default style chooser. A default style is required
+      // default styleXml chooser. A default styleXml is required
       defaultStyleModel = new Model();
       final DropDownChoice defaultStyle = new DropDownChoice("defaultStyle", defaultStyleModel,
               new StylesModel(), new StyleChoiceRenderer());
@@ -156,7 +241,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       final LegendGraphicAjaxUpdater defaultStyleUpdater;
       defaultStyleUpdater = new LegendGraphicAjaxUpdater(wmsURL, defStyleImg, defaultStyleModel);
 
-      // Add an onChange action to the style drop down that uses the legend
+      // Add an onChange action to the styleXml drop down that uses the legend
       // ajax updater to change the legend graphic on the page.
       defaultStyle.add(new OnChangeAjaxBehavior() {
         @Override
@@ -272,8 +357,10 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
 
         // Build the geoserver layer object
         LayerInfo layerInfo = builder.buildLayer(fti);
-        // Set the default style to the one selected by the user
-        layerInfo.setDefaultStyle(styleInfo);
+
+        // Set the default styleXml to the one selected by the user
+//        layerInfo.setDefaultStyle(styleInfo);
+        layerInfo.setDefaultStyle(createNewStyle(layername, "http://localhost/opencop-icons/HSWG/Crime_Bomb_ch.png"));
 
         // Create rule
         if(DbUtils.hasField(storeInfo, layername, "edit_url")
