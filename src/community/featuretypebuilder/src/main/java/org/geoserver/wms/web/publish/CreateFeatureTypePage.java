@@ -1,4 +1,4 @@
-package com.geocent.featuretypebuilder;
+package org.geoserver.wms.web.publish;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
@@ -40,19 +40,28 @@ import org.geoserver.catalog.DataStoreInfo;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.LayerInfo;
 import org.geoserver.catalog.StoreInfo;
+import org.geoserver.catalog.StyleInfo;
 import org.geoserver.web.data.resource.ResourceConfigurationPage;
 import org.geoserver.web.wicket.ParamResourceModel;
-//import org.geoserver.wms.web.publish.LegendGraphicAjaxUpdater;
-import org.geoserver.wms.web.publish.StyleChoiceRenderer;
-import org.geoserver.wms.web.publish.StylesModel;
 import org.geotools.data.DataStore;
 import org.geotools.data.FeatureSource;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 public class CreateFeatureTypePage extends GeoServerSecuredPage {
+  static final CoordinateReferenceSystem WGS84;
+
+  static {
+    try {
+      WGS84 = CRS.decode("EPSG:4326");
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   public CreateFeatureTypePage() {
     add(new FeatureTypeForm("featureTypeForm"));
@@ -82,29 +91,30 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
             }));
     ListView lv = null;  // represents attrs list in form
     DropDownChoice stores = null;
+    Model defaultStyleModel = null;
 
     public FeatureTypeForm(final String id) {
       super(id, new CompoundPropertyModel<ValueMap>(new ValueMap()));  // no validation
 
-              BINDINGS.put("integer", Integer.class);
-              BINDINGS.put("varchar(5)", String.class);
-              BINDINGS.put("varchar(20)", String.class);
-              BINDINGS.put("varchar(500)", String.class);
-              BINDINGS.put("text", String.class);
-              BINDINGS.put("boolean", Boolean.class);
-              BINDINGS.put("LINE", LineString.class);
-              BINDINGS.put("POLYGON", Polygon.class);
-              BINDINGS.put("POINT", Point.class);
-              
-              LENGTHS.put("integer", 0);
-              LENGTHS.put("varchar(5)", 5);
-              LENGTHS.put("varchar(20)", 20);
-              LENGTHS.put("varchar(500)", 500);
-              LENGTHS.put("text", 0);
-              LENGTHS.put("boolean", 0);
-              LENGTHS.put("LINE", 0);
-              LENGTHS.put("POLYGON", 0);
-              LENGTHS.put("POINT", 0);
+      BINDINGS.put("integer", Integer.class);
+      BINDINGS.put("varchar(5)", String.class);
+      BINDINGS.put("varchar(20)", String.class);
+      BINDINGS.put("varchar(500)", String.class);
+      BINDINGS.put("text", String.class);
+      BINDINGS.put("boolean", Boolean.class);
+      BINDINGS.put("LINE", LineString.class);
+      BINDINGS.put("POLYGON", Polygon.class);
+      BINDINGS.put("POINT", Point.class);
+      
+      LENGTHS.put("integer", 0);
+      LENGTHS.put("varchar(5)", 5);
+      LENGTHS.put("varchar(20)", 20);
+      LENGTHS.put("varchar(500)", 500);
+      LENGTHS.put("text", 0);
+      LENGTHS.put("boolean", 0);
+      LENGTHS.put("LINE", 0);
+      LENGTHS.put("POLYGON", 0);
+      LENGTHS.put("POINT", 0);
 
       add(new TextField<String>("layername").setType(String.class));
       add(stores = (DropDownChoice) new DropDownChoice(
@@ -128,29 +138,32 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       });
 
       // default style chooser. A default style is required
-//      StylesModel styles = new StylesModel();
-//      final PropertyModel defaultStyleModel = new PropertyModel(layerModel, "defaultStyle");
-//      final DropDownChoice defaultStyle = new DropDownChoice("defaultStyle", defaultStyleModel,
-//              styles, new StyleChoiceRenderer());
-//      defaultStyle.setRequired(true);
-//      add(defaultStyle);
-//
-//      final Image defStyleImg = new Image("defaultStyleLegendGraphic");
-//      defStyleImg.setOutputMarkupId(true);
-//      add(defStyleImg);
-//
-//      String wmsURL = getRequest().getRelativePathPrefixToContextRoot();
-//      wmsURL += wmsURL.endsWith("/") ? "wms?" : "/wms?";
-//      final LegendGraphicAjaxUpdater defaultStyleUpdater;
-//      defaultStyleUpdater = new LegendGraphicAjaxUpdater(wmsURL, defStyleImg, defaultStyleModel);
-//
-//      defaultStyle.add(new OnChangeAjaxBehavior() {
-//
-//        @Override
-//        protected void onUpdate(AjaxRequestTarget target) {
-//          defaultStyleUpdater.updateStyleImage(target);
-//        }
-//      });
+      defaultStyleModel = new Model();
+      final DropDownChoice defaultStyle = new DropDownChoice("defaultStyle", defaultStyleModel,
+              new StylesModel(), new StyleChoiceRenderer());
+      defaultStyle.setRequired(true);
+      defaultStyle.setOutputMarkupId(true);
+      add(defaultStyle);
+
+      // Add the Style's legend graphic to the page
+      final Image defStyleImg = new Image("defaultStyleLegendGraphic");
+      defStyleImg.setOutputMarkupId(true);
+      add(defStyleImg);
+
+      // Add a legend graphic ajax updater object
+      String wmsURL = getRequest().getRelativePathPrefixToContextRoot();
+      wmsURL += wmsURL.endsWith("/") ? "wms?" : "/wms?";
+      final LegendGraphicAjaxUpdater defaultStyleUpdater;
+      defaultStyleUpdater = new LegendGraphicAjaxUpdater(wmsURL, defStyleImg, defaultStyleModel);
+
+      // Add an onChange action to the style drop down that uses the legend
+      // ajax updater to change the legend graphic on the page.
+      defaultStyle.add(new OnChangeAjaxBehavior() {
+        @Override
+        protected void onUpdate(AjaxRequestTarget target) {
+          defaultStyleUpdater.updateStyleImage(target);
+        }
+      });
     }
 
     @Override
@@ -160,7 +173,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       ValueMap values = getModelObject();
       String layername = DbUtils.fixName(values.getString("layername"));
       StoreInfo storeInfo = (StoreInfo) stores.getModelObject();
-      String style = values.getString("style");
+      StyleInfo styleInfo = (StyleInfo) defaultStyleModel.getObject();
       List<Row> rows = parseSerialization(values.getString("serialized-fields"));
 
       // refresh attrs model (if failure we'll have to refresh the form)
@@ -237,15 +250,13 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       }
 
       // create table
-//      DbUtils.createTable(storeInfo, layername, rows);
-//      DbUtils.registerGeometryColumn(storeInfo, layername, "POINT", "4326");
-
       DataStore ds = null;
       DataStoreInfo dsInfo = null;
       try {
         // basic checks
         dsInfo = getCatalog().getDataStore(storeInfo.getId());
         ds = (DataStore) dsInfo.getDataStore(null);
+        // Check if the layername already exists in the datastore
         if (Arrays.asList(ds.getTypeNames()).contains(layername)) {
           error(new ParamResourceModel("duplicateTypeName", this, dsInfo.getName(),
                   layername).getString());
@@ -256,13 +267,29 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       }
 
       try {
+        // Convert the rows to a SimpleFeatureType
         SimpleFeatureType featureType = buildFeatureType(rows, layername);
+        // Persist the SimpleFeatureType to the datastore 
         ds.createSchema(featureType);
 
         CatalogBuilder builder = new CatalogBuilder(getCatalog());
         builder.setStore(dsInfo);
+        
+        // Build the geoserver feature type object
         FeatureTypeInfo fti = builder.buildFeatureType(getFeatureSource(ds, layername));
+        // Set the bounding boxes to makes things happy
+        ReferencedEnvelope world = new ReferencedEnvelope(-180, 180, -90, 90, WGS84);
+        fti.setLatLonBoundingBox(world);
+        fti.setNativeBoundingBox(world);
+        
+        // Build the geoserver layer object
         LayerInfo layerInfo = builder.buildLayer(fti);
+        // Set the default style to the one selected by the user
+        layerInfo.setDefaultStyle(styleInfo);
+        
+        // Redirect user to the layer edit page.
+        // At this point the layer is not persisted. Only after the user clicks
+        // save on the edit page.
         setResponsePage(new ResourceConfigurationPage(layerInfo, true));
       } catch (Exception e) {
         LOGGER.log(Level.SEVERE, "Failed to create feature type", e);
@@ -320,7 +347,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
         if (Geometry.class.isAssignableFrom(binding)) {
 
           try {
-            builder.add(row.getName(), binding, CRS.decode("EPSG:4326"));
+            builder.add(row.getName(), binding, WGS84);
           } catch (Exception e) {
             throw new RuntimeException(e);
           }

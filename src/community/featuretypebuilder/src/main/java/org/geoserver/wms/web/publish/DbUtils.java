@@ -1,4 +1,4 @@
-package com.geocent.featuretypebuilder;
+package org.geoserver.wms.web.publish;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

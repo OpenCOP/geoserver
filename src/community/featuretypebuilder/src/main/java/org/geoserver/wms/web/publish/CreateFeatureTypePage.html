@@ -63,10 +63,16 @@ $(function() {
 
         <label for="storesDropDown">Data Store</label>
         <select wicket:id="storesDropDown"></select>
-
-<!--        <label for="defaultStyle"><wicket:message key="defaultStyle">Default Style</wicket:message></label>
-        <select id="defaultStyle" class="select" wicket:id="defaultStyle"></select>
-			  <img wicket:id="defaultStyleLegendGraphic"></img>-->
+        
+        <ul>
+          <li>
+            <label for="defaultStyle"><wicket:message key="defaultStyle">Default Style</wicket:message></label>
+            <select id="defaultStyle" class="select" wicket:id="defaultStyle"></select>
+          </li>
+          <li>
+            <img wicket:id="defaultStyleLegendGraphic"></img>
+          </li>
+        </ul>
 
         <input type="hidden" wicket:id="serialized-fields"></input>
 

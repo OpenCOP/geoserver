@@ -4,6 +4,6 @@
     <property name="id" value="createFeatureTypePage"/>
     <property name="titleKey" value="CreateFeatureTypePage.title"/>
     <property name="descriptionKey" value="CreateFeatureTypePage.description"/>
-    <property name="componentClass" value="com.geocent.featuretypebuilder.CreateFeatureTypePage"/>
+    <property name="componentClass" value="org.geoserver.wms.web.publish.CreateFeatureTypePage"/>
   </bean>
 </beans>
