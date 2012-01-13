@@ -35,6 +35,11 @@ var eoc = (function() {
       }
     },
 
+    changeStyleOption: function(input) {
+      $("#use-existing-style-block")[input.checked ? "show" : "hide"]()
+      $("#use-new-style-block")[!input.checked ? "show" : "hide"]()
+    },
+
     onsubmit: function() {
       $("[name=serialized-fields]").val(
         $('tr.field')
@@ -63,24 +68,35 @@ $(function() {
 
         <label for="storesDropDown">Data Store</label>
         <select wicket:id="storesDropDown"></select>
-        
-        <ul>
-          <li>
-            <label for="defaultStyle"><wicket:message key="defaultStyle">Default Style</wicket:message></label>
-            <select id="defaultStyle" class="select" wicket:id="defaultStyle"></select>
-          </li>
-          <li>
-            <img wicket:id="defaultStyleLegendGraphic"></img>
-          </li>
-        </ul>
+
+        <h2>Style</h2>
+        <label for="useExistingStyle">Use an Existing Style</label>
+        <input type="checkbox" wicket:id="useExistingStyle"
+               onclick="eoc.changeStyleOption(this)" />
+        <!-- use an existing style -->
+        <div id="use-existing-style-block" style="display:none">
+          <ul>
+            <li>
+              <label for="defaultStyle"><wicket:message key="defaultStyle">Default Style</wicket:message></label>
+              <select id="defaultStyle" class="select" wicket:id="defaultStyle"></select>
+            </li>
+            <li>
+              <img wicket:id="defaultStyleLegendGraphic"></img>
+            </li>
+          </ul>
+        </div>
+        <!-- use a new style -->
+        <div id="use-new-style-block" >
+          <p>use the new style!</p>
+        </div>
 
         <input type="hidden" wicket:id="serialized-fields"></input>
 
-        <p style="margin:15px 0px 0px 0px">   
+        <h2>Schema</h2>
+        <p style="margin:15px 0px 0px 0px">
           <span class="fake-button" onclick="eoc.addField()">+</span>
           Add field
         </p>
-
         <table class="fields">
           <tr wicket:id="schema" class="field">
             <td><span class="fake-button" onclick="eoc.deleteField(this)">-</span></td>

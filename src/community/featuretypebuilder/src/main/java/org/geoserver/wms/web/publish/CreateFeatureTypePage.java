@@ -22,6 +22,7 @@ import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.Transformer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.HiddenField;
@@ -206,7 +207,10 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
               new StoreListModel(),
               new StoreListChoiceRenderer())
             .setOutputMarkupId(true));
-      add(new HiddenField<String>("serialized-fields").setType(String.class).setOutputMarkupId(true));
+      add(new HiddenField<String>("serialized-fields")
+                .setType(String.class)
+                .setOutputMarkupId(true));
+      add(new CheckBox("useExistingStyle"));
       add(lv = new ListView("schema", defaultRows) {
         @Override
         protected void populateItem(ListItem item) {
@@ -256,6 +260,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       StoreInfo storeInfo = (StoreInfo) stores.getModelObject();
       StyleInfo styleInfo = (StyleInfo) defaultStyleModel.getObject();
       List<Row> rows = parseSerialization(values.getString("serialized-fields"));
+      boolean useExistingStyle = values.getString("useExistingStyle").equals("true");
 
       // refresh attrs model
       List lvModel = lv.getModelObject();
@@ -277,9 +282,13 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       }
 
       // guard: user selected a style
-      if(styleInfo == null) {
-        error("You must select a style");
-        return;
+      if(useExistingStyle) {
+        if(styleInfo == null) {
+          error("You must select a style");
+          return;
+        }
+      } else {
+        // if icon
       }
 
       // guard: table doesn't already exist
@@ -372,9 +381,12 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
         // Build the geoserver layer object
         LayerInfo layerInfo = builder.buildLayer(fti);
 
-        // Set the default styleXml to the one selected by the user
-//        layerInfo.setDefaultStyle(styleInfo);
-        layerInfo.setDefaultStyle(createNewStyle(layername, "http://localhost/opencop-icons/HSWG/Crime_Bomb_ch.png"));
+        // style style
+        if(useExistingStyle) {
+          layerInfo.setDefaultStyle(styleInfo);
+        } else {
+          layerInfo.setDefaultStyle(createNewStyle(layername, "http://localhost/opencop-icons/HSWG/Crime_Bomb_ch.png"));
+        }
 
         // Create rule
         if(DbUtils.hasField(storeInfo, layername, "edit_url")
