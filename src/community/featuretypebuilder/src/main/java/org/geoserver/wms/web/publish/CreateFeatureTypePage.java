@@ -6,6 +6,8 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.logging.Logger;
 import org.geoserver.web.GeoServerSecuredPage;
 import java.util.ArrayList;
@@ -64,6 +66,15 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       throw new RuntimeException(e);
     }
   }
+
+  private static List<String> imageTypes = Arrays.asList(new String[]{
+    "image/gif",
+    "image/jpeg",
+    "image/pjpeg",
+    "image/png",
+    "image/svg+xml",
+    "image/tiff",
+    "image/vnd.microsoft.icon"});
 
   public CreateFeatureTypePage() {
     add(new FeatureTypeForm("featureTypeForm"));
@@ -211,6 +222,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
                 .setType(String.class)
                 .setOutputMarkupId(true));
       add(new CheckBox("useExistingStyle"));
+      add(new TextField<String>("iconname").setType(String.class));
       add(lv = new ListView("schema", defaultRows) {
         @Override
         protected void populateItem(ListItem item) {
@@ -257,6 +269,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       // grab values from form
       ValueMap values = getModelObject();
       String layername = DbUtils.fixName(values.getString("layername"));
+      String iconurl = values.getString("iconname");
       StoreInfo storeInfo = (StoreInfo) stores.getModelObject();
       StyleInfo styleInfo = (StyleInfo) defaultStyleModel.getObject();
       List<Row> rows = parseSerialization(values.getString("serialized-fields"));
@@ -281,14 +294,27 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
         return;
       }
 
-      // guard: user selected a style
+      // style guards
       if(useExistingStyle) {
+
+        // guard: user selected a style
         if(styleInfo == null) {
           error("You must select a style");
           return;
         }
       } else {
-        // if icon
+
+        // guard: user entered a url
+        if(iconurl.equals("")) {
+          error("You must select an icon for the style.");
+          return;
+        }
+
+        // guard: image url points to an image
+        if(!urlPointsToAnImage(iconurl)) {
+          error("Either the image server is down, or the image isn't of a known image type.");
+          return;
+        }
       }
 
       // guard: table doesn't already exist
@@ -385,7 +411,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
         if(useExistingStyle) {
           layerInfo.setDefaultStyle(styleInfo);
         } else {
-          layerInfo.setDefaultStyle(createNewStyle(layername, "http://localhost/opencop-icons/HSWG/Crime_Bomb_ch.png"));
+          layerInfo.setDefaultStyle(createNewStyle(layername, iconurl));
         }
 
         // Create rule
@@ -416,6 +442,23 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       }
 
       info(String.format("Layer '%s' created.", layername));
+    }
+
+    private boolean urlPointsToAnImage(String url) {
+      final String type;
+      try {
+        type = new URL(url).openConnection().getContentType();
+      } catch (IOException ex) {
+        Logger.getLogger(CreateFeatureTypePage.class.getName()).
+                log(Level.SEVERE, null, ex);
+        return false;
+      }
+
+      return CollectionUtils.exists(imageTypes, new Predicate() {
+        public boolean evaluate(Object object) {
+          return ((String) object).equals(type);
+        }
+      });
     }
 
     private Row getTheGeom(List<Row> rows) {
