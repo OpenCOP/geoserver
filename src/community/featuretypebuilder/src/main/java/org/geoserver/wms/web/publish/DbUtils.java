@@ -35,7 +35,7 @@ public class DbUtils {
    * @return
    */
   public static String fixName(String name) {
-    String n = name.toLowerCase().replace(" ", "_");
+    String n = name.toLowerCase().replace(" ", "_").replaceAll("[^a-zA-Z0-9_]", "");
     boolean startsWithNum = n.length() > 0 && Character.isDigit(n.charAt(0));
     return startsWithNum ? "_" + n : n;
   }

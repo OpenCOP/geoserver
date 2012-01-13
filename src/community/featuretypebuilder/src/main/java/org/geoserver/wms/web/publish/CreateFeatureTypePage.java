@@ -199,15 +199,12 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       LENGTHS.put("POLYGON", 0);
       LENGTHS.put("POINT", 0);
 
-      add(new TextField<String>("layername")
-              .setType(String.class)
-              .setRequired(true));
+      add(new TextField<String>("layername").setType(String.class));
       add(stores = (DropDownChoice) new DropDownChoice(
               "storesDropDown",
               new Model(),
               new StoreListModel(),
               new StoreListChoiceRenderer())
-            .setRequired(true)
             .setOutputMarkupId(true));
       add(new HiddenField<String>("serialized-fields").setType(String.class).setOutputMarkupId(true));
       add(lv = new ListView("schema", defaultRows) {
@@ -226,7 +223,6 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       defaultStyleModel = new Model();
       final DropDownChoice defaultStyle = new DropDownChoice("defaultStyle", defaultStyleModel,
               new StylesModel(), new StyleChoiceRenderer());
-      defaultStyle.setRequired(true);
       defaultStyle.setOutputMarkupId(true);
       add(defaultStyle);
 
@@ -268,6 +264,30 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
         lvModel.add(row);
       }
 
+      // guard: user gave a table name
+      if (layername.isEmpty()) {
+        error("Layer name not given");
+        return;
+      }
+
+      // guard: user selected a store type
+      if (storeInfo == null || storeInfo.getType() == null) {
+        error("You must select a data store.");
+        return;
+      }
+
+      // guard: user selected a style
+      if(styleInfo == null) {
+        error("You must select a style");
+        return;
+      }
+
+      // guard: table doesn't already exist
+      if (DbUtils.isTableExists(storeInfo, layername)) {
+        error(String.format("Table of name '%s' already exists", layername));
+        return;
+      }
+
       // guard: correct store type
       if (!storeInfo.getType().equals("PostGIS")) {
         error(String.format("Store type '%s' is invalid.  Store must be of type 'PostGIS'.",
@@ -288,12 +308,6 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       // guard: all row names are unique
       if (!isAllNamesUnique(rows)) {
         error("Duplicate attribute names are not allowed.");
-        return;
-      }
-
-      // guard: table doesn't already exist
-      if (DbUtils.isTableExists(storeInfo, layername)) {
-        error(String.format("Table of name '%s' already exists", layername));
         return;
       }
 
