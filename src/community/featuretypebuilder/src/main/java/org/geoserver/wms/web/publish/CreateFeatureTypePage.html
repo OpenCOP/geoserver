@@ -14,20 +14,23 @@ table {
   width: 0;
 }
     </style>
-    <script type="text/javascript">
-
-    var eoc = (function() {
+    <script type="text/javascript" >
+      var eoc = (function() {
 
         function removePipes(text) {
           return text.replace(/\|/g, "")
         }
 
-        function iconSearch() {
-          $('#icon-display-area').empty().text("Loading...")
-          $('#got').text("?")
-          var queryStr = $('#icon-search-terms').val()
-          var cql = cqlStr(queryStr)
-          $.getJSON(
+        // prevent the search from happening too ofen
+        var iconSearch = function() {
+          var timeout
+
+          function search() {
+            $('#icon-display-area').empty().text("Loading...")
+            $('#got').text("?")
+            var queryStr = $('#icon-search-terms').val()
+            var cql = cqlStr(queryStr)
+            $.getJSON(
             "/geoserver/wfs",
             { request: "GetFeature",
               version: "1.1.0",
@@ -38,8 +41,14 @@ table {
               CQL_FILTER: cql},
             buildIconTable
           )
-          setOutOfHowMany(cql)
-        }
+            setOutOfHowMany(cql)
+          }
+
+          return function() {
+            if(timeout) clearTimeout(timeout)
+            timeout = setTimeout(search, 800)
+          }
+        }()
 
         function setOutOfHowMany(cql) {
           $('#total').text('?')
