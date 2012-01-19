@@ -22,7 +22,52 @@ var eoc = (function() {
     return text.replace(/\|/g, "")
   }
 
+  function iconSearch() {
+    $('#icon-display-area').empty().text("Loading...")
+    var queryStr = $('#icon-search-terms').val()
+    $.getJSON(
+      "/geoserver/wfs",
+      { request: "GetFeature",
+        version: "1.1.0",
+        typeName: "opencop:iconmaster",
+        outputFormat: "JSON",
+        maxFeatures: 10,
+        // startIndex: 10,
+        CQL_FILTER: cqlStr(queryStr)},
+      buildIconTable
+    )
+  }
+
+  function cqlStr(queryStr) {
+    return queryStr
+      .split(" ")
+      .map(function(n) { return " name like '%" + n + "%' " })
+      .join("and")
+  }
+
+  function buildIconTable(json) {
+    var props = $(json.features).map(function(i, n) { return n.properties })
+    var table = $('<table>')
+    props.each(function(i, n) {
+      var img = $('<img>').attr('src', n.url)
+      var name = $('<td>').text(n.name)
+      var tr = $('<tr>')
+        .append(img, name)
+        .click(function() {selectIcon(img)})
+      table.append(tr)
+    })
+    $('#icon-display-area').empty().append(table)
+  }
+
+  function selectIcon(img) {
+    var src = img.attr('src')
+    $('#iconname').val(src)
+    $('#icon-preview').attr('src', src)
+  }
+
   return {
+    iconSearch: iconSearch,
+
     addField: function() {
       $('tr.field:last').clone().appendTo('table.fields')
       $('tr.field:last .name').val("")
@@ -55,6 +100,7 @@ var eoc = (function() {
 $(function() {
   var textfield = $('input.text:first')
   if(textfield) textfield.focus().select()
+  eoc.iconSearch()
 })
 
     </script>
@@ -87,9 +133,12 @@ $(function() {
         </div>
         <!-- use a new style -->
         <div id="use-new-style-block" >
-          <p>A new style will be created with this icon as the default graphic.</p>
+          <label for="icon-search-terms">Icon Search</label>
+          <input type="text" id="icon-search-terms" onkeypress="eoc.iconSearch()" />
+          <div id="icon-display-area">Loading icon images...</div>
           <label for="iconname">Icon Full Url</label>
-          <input type="text" wicket:id="iconname"></input>
+          <img src="" id="icon-preview" />
+          <input type="text" size="60" id="iconname" wicket:id="iconname"></input>
         </div>
 
         <input type="hidden" wicket:id="serialized-fields"></input>

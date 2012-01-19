@@ -170,6 +170,9 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
               "varchar(20)",
               "varchar(500)",
               "text",
+              "date",       // date
+              "time",       // time
+              "timestamp",  // datetime
               "boolean",
               "LINE",
               "POLYGON",
@@ -200,6 +203,9 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       BINDINGS.put("LINE", LineString.class);
       BINDINGS.put("POLYGON", Polygon.class);
       BINDINGS.put("POINT", Point.class);
+      BINDINGS.put("date", java.sql.Date.class);
+      BINDINGS.put("time", java.sql.Time.class);
+      BINDINGS.put("datetime", java.sql.Timestamp.class);
 
       LENGTHS.put("integer", 0);
       LENGTHS.put("varchar(5)", 5);
@@ -210,6 +216,9 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       LENGTHS.put("LINE", 0);
       LENGTHS.put("POLYGON", 0);
       LENGTHS.put("POINT", 0);
+      LENGTHS.put("date", 0);
+      LENGTHS.put("time", 0);
+      LENGTHS.put("datetime", 0);
 
       add(new TextField<String>("layername").setType(String.class));
       add(stores = (DropDownChoice) new DropDownChoice(
