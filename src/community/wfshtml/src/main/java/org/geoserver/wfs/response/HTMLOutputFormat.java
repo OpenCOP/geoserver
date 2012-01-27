@@ -6,7 +6,6 @@ import freemarker.ext.beans.BeansWrapper;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -23,15 +22,9 @@ import org.geoserver.ows.URLMangler.URLType;
 import org.geoserver.platform.Operation;
 import org.geoserver.platform.ServiceException;
 import org.geoserver.wfs.WFSGetFeatureOutputFormat;
-import org.geoserver.wfs.request.FeatureCollectionResponse;
-import org.geoserver.wfs.request.GetFeatureRequest;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeType;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.operation.TransformException;
 
 /**
  * WFS output format for a GetFeature operation in which the outputFormat is "html".
@@ -88,17 +81,17 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
     return "text/html";
   }
 
-  @Override
-  public String getPreferredDisposition(Object value, Operation operation) {
-    return DISPOSITION_ATTACH;
-  }
-
-  @Override
-  public String getAttachmentFileName(Object value, Operation operation) {
-    GetFeatureRequest request = GetFeatureRequest.adapt(operation.getParameters()[0]);
-    String outputFileName = request.getQueries().get(0).getTypeNames().get(0).getLocalPart();
-    return outputFileName + ".html";
-  }
+//  @Override
+//  public String getPreferredDisposition(Object value, Operation operation) {
+//    return DISPOSITION_ATTACH;
+//  }
+//
+//  @Override
+//  public String getAttachmentFileName(Object value, Operation operation) {
+//    GetFeatureRequest request = GetFeatureRequest.adapt(operation.getParameters()[0]);
+//    String outputFileName = request.getQueries().get(0).getTypeNames().get(0).getLocalPart();
+//    return outputFileName + ".html";
+//  }
 
   /**
    * Version of write function used in GeoServer 2.1
@@ -109,11 +102,10 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
    * @throws IOException
    * @throws ServiceException 
    */
+  @Override
   protected void write(FeatureCollectionType featureCollection,
           OutputStream output, Operation getFeature) throws IOException,
-          ServiceException, 
-          TransformException, 
-          FactoryException {
+          ServiceException {
 
     Template template = cfg.getTemplate("WFSHTMLTemplate.ftl");
     template.setOutputEncoding("UTF-8");
@@ -193,18 +185,18 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
    * @throws IOException
    * @throws ServiceException 
    */
-  @Override
-  protected void write(FeatureCollectionResponse featureCollection,
-          OutputStream output, Operation getFeature) throws IOException,
-          ServiceException {
-    //write out content here
-
-    //create a writer
-    BufferedWriter w = new BufferedWriter(new OutputStreamWriter(output));
-
-    w.write("Test");
-    w.flush();
-  }
+//  @Override
+//  protected void write(FeatureCollectionResponse featureCollection,
+//          OutputStream output, Operation getFeature) throws IOException,
+//          ServiceException {
+//    //write out content here
+//
+//    //create a writer
+//    BufferedWriter w = new BufferedWriter(new OutputStreamWriter(output));
+//
+//    w.write("Test");
+//    w.flush();
+//  }
 
   /*
    * returns a String that is a JSON of the featureCollection.
