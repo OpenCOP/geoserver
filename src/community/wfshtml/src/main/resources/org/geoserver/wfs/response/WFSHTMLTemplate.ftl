@@ -66,6 +66,7 @@
           Ext.MessageBox.show({
             title: "WFS Transaction Success",
             msg: message,
+            minWidth: 500,
             buttons: Ext.MessageBox.OK,
             fn: function(btn) {
               window.location.reload();
@@ -91,6 +92,7 @@
           Ext.MessageBox.show({
             title: "WFS Transaction Failure",
             msg: message,
+            minWidth: 500,
             buttons: Ext.MessageBox.OK,
             icon: Ext.MessageBox.ERROR
           });
