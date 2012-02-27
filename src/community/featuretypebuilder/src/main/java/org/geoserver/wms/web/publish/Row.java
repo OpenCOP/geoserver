@@ -31,12 +31,12 @@ public class Row implements Serializable {
   }
 
   public boolean isGeometryType() {
-    return type.equals("POINT")
-        || type.equals("LINE")
-        || type.equals("POLYGON")
-        || type.equals("MULTIPOINT")
-        || type.equals("MULTILINE")
-        || type.equals("MULTIPOLYGON");
+    return type.equalsIgnoreCase("POINT")
+        || type.equalsIgnoreCase("LINE")
+        || type.equalsIgnoreCase("POLYGON")
+        || type.equalsIgnoreCase("MULTIPOINT")
+        || type.equalsIgnoreCase("MULTILINE")
+        || type.equalsIgnoreCase("MULTIPOLYGON");
   }
 
   @Override

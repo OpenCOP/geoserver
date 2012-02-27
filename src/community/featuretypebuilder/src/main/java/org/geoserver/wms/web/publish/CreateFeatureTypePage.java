@@ -164,27 +164,28 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
   public final class FeatureTypeForm extends Form<ValueMap> {
 
     private final List<String> TYPES = Arrays.asList(new String[]{
-              "integer",
-              "varchar(5)",
-              "varchar(20)",
-              "varchar(500)",
-              "text",
-              "date",       // date
-              "time",       // time
-              "timestamp",  // datetime
-              "boolean",
-              "LINE",
-              "POLYGON",
-              "POINT"});
+              "Integer",
+              "Double",
+              "Boolean",
+              "Text(5)",
+              "Text(20)",
+              "Text(500)",
+              "Text",
+              "Date",       // date
+              "Time",       // time
+              "Date and Time",  // datetime
+              "Point",
+              "Line",
+              "Polygon"});
 
     private Map<String, Class> BINDINGS = new TreeMap<String, Class>();
     private Map<String, Integer> LENGTHS = new TreeMap<String, Integer>();
 
     List<Row> defaultRows = new ArrayList(Arrays.asList(new Row[]{
-              new Row("version", "integer"),
-              new Row("description", "varchar(500)"),
-              new Row("edit_url", "varchar(500)"),
-              new Row("the_geom", "POINT")}));
+              new Row("version", "Integer"),
+              new Row("description", "Text(500)"),
+              new Row("edit_url", "Text(500)"),
+              new Row("the_geom", "Point")}));
 
     ListView lv = null;  // represents attrs list in form
     DropDownChoice stores = null;
@@ -193,31 +194,33 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
     public FeatureTypeForm(final String id) {
       super(id, new CompoundPropertyModel<ValueMap>(new ValueMap()));  // no validation
 
-      BINDINGS.put("integer", Integer.class);
-      BINDINGS.put("varchar(5)", String.class);
-      BINDINGS.put("varchar(20)", String.class);
-      BINDINGS.put("varchar(500)", String.class);
-      BINDINGS.put("text", String.class);
-      BINDINGS.put("boolean", Boolean.class);
-      BINDINGS.put("LINE", LineString.class);
-      BINDINGS.put("POLYGON", Polygon.class);
-      BINDINGS.put("POINT", Point.class);
-      BINDINGS.put("date", java.sql.Date.class);
-      BINDINGS.put("time", java.sql.Time.class);
-      BINDINGS.put("datetime", java.sql.Timestamp.class);
+      BINDINGS.put("Integer", Integer.class);
+      BINDINGS.put("Double", Double.class);
+      BINDINGS.put("Boolean", Boolean.class);
+      BINDINGS.put("Text(5)", String.class);
+      BINDINGS.put("Text(20)", String.class);
+      BINDINGS.put("Text(500)", String.class);
+      BINDINGS.put("Text", String.class);
+      BINDINGS.put("Date", java.sql.Date.class);
+      BINDINGS.put("Time", java.sql.Time.class);
+      BINDINGS.put("Date and Time", java.sql.Timestamp.class);
+      BINDINGS.put("Point", Point.class);
+      BINDINGS.put("Line", LineString.class);
+      BINDINGS.put("Polygon", Polygon.class);
 
-      LENGTHS.put("integer", 0);
-      LENGTHS.put("varchar(5)", 5);
-      LENGTHS.put("varchar(20)", 20);
-      LENGTHS.put("varchar(500)", 500);
-      LENGTHS.put("text", 0);
-      LENGTHS.put("boolean", 0);
-      LENGTHS.put("LINE", 0);
-      LENGTHS.put("POLYGON", 0);
-      LENGTHS.put("POINT", 0);
-      LENGTHS.put("date", 0);
-      LENGTHS.put("time", 0);
-      LENGTHS.put("datetime", 0);
+      LENGTHS.put("Integer", 0);
+      LENGTHS.put("Double", 0);
+      LENGTHS.put("Boolean", 0);
+      LENGTHS.put("Text(5)", 5);
+      LENGTHS.put("Text(20)", 20);
+      LENGTHS.put("Text(500)", 500);
+      LENGTHS.put("Text", 0);
+      LENGTHS.put("Date", 0);
+      LENGTHS.put("Time", 0);
+      LENGTHS.put("Date and Time", 0);
+      LENGTHS.put("Point", 0);
+      LENGTHS.put("Line", 0);
+      LENGTHS.put("Polygon", 0);
 
       add(new TextField<String>("layername").setType(String.class));
       add(stores = (DropDownChoice) new DropDownChoice(

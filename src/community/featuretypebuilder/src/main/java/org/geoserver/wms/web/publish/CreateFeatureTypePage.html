@@ -2,17 +2,7 @@
   <wicket:head>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <style type="text/css">
-
-.fake-button {
-  background-color:#FCFCFC;
-  border:1px solid #CCCCCC;
-  cursor: pointer;
-  padding: 2px 6px;
-  color: #333333;
-}
-table {
-  width: 0;
-}
+      table { width: 0; }
     </style>
     <script type="text/javascript" >
       var eoc = (function() {
@@ -31,16 +21,16 @@ table {
             var queryStr = $('#icon-search-terms').val()
             var cql = cqlStr(queryStr)
             $.getJSON(
-            "/geoserver/wfs",
-            { request: "GetFeature",
-              version: "1.1.0",
-              typeName: "opencop:iconmaster",
-              outputFormat: "JSON",
-              maxFeatures: 10,
-              // startIndex: 10,  // will be used for pagination
-              CQL_FILTER: cql},
-            buildIconTable
-          )
+              "/geoserver/wfs",
+              { request: "GetFeature",
+                version: "1.1.0",
+                typeName: "opencop:icon",
+                outputFormat: "JSON",
+                maxFeatures: 10,
+                // startIndex: 10,  // will be used for pagination
+                CQL_FILTER: cql},
+              buildIconTable
+            );
             setOutOfHowMany(cql)
           }
 
@@ -57,11 +47,11 @@ table {
             dataType: "xml",
             data: { request: "GetFeature",
               version: "1.1.0",
-              typeName: "opencop:iconmaster",
+              typeName: "opencop:icon",
               resultType: "hits",
               CQL_FILTER: cql },
             success: function(doc) {
-              var num = $(doc.activeElement).attr("numberOfFeatures")
+              var num = $(doc).find("[numberOfFeatures]").first().attr("numberOfFeatures")
               $('#total').text(num)
             }
           })
@@ -183,12 +173,11 @@ table {
 
         <h2>Schema</h2>
         <p style="margin:15px 0px 0px 0px">
-          <span class="fake-button" onclick="eoc.addField()">+</span>
-          Add field
+          <span class="add-link" onclick="eoc.addField()">Add new attribute</span>
         </p>
         <table class="fields">
           <tr wicket:id="schema" class="field">
-            <td><span class="fake-button" onclick="eoc.deleteField(this)">-</span></td>
+            <td><span class="remove-link" onclick="eoc.deleteField(this)"></span></td>
             <td><input type="text" wicket:id="name" class="name"></input></td>
             <td><select wicket:id="type" class="type"></select></td>
           </tr>
