@@ -22,8 +22,19 @@
             <select wicket:id="storesDropDown"></select>
           </li>
           <li>
-            <label for="layername">Layername</label>
-            <input wicket:id="layername" type="text"/>
+            <label for="defaultStyle"><wicket:message key="defaultStyle">Default Style</wicket:message></label>
+            <select id="defaultStyle" class="select" wicket:id="defaultStyle"></select>
+          </li>
+          <li>
+            <img wicket:id="defaultStyleLegendGraphic"></img>
+          </li>
+          <li>
+            <label for="layerTitle">Layer Title</label>
+            <input wicket:id="layerTitle" type="text"/>
+          </li>
+          <li>
+            <label for="shapefileName">Shapefile Name</label>
+            <input wicket:id="shapefileName" type="text"/>
           </li>
           <li>
             <label for="file">Shapefile ZIP</label>

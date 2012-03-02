@@ -1,4 +1,4 @@
-package org.geoserver.wms.web.publish;
+package com.geocent.opencop.db.util;
 
 import java.io.Serializable;
 import java.sql.Connection;
@@ -39,25 +39,25 @@ public class Db {
       rs = stmt.executeQuery(query);
       result = fn.fn(rs);
     } catch (SQLException ex) {
-      Logger.getLogger(CreateFeatureTypePage.class.getName()).
+      Logger.getLogger(Db.class.getName()).
               log(Level.SEVERE, null, ex);
     } finally {
       try {
         rs.close();
       } catch (SQLException ex) {
-        Logger.getLogger(CreateFeatureTypePage.class.getName()).
+        Logger.getLogger(Db.class.getName()).
                 log(Level.SEVERE, null, ex);
       } finally {
         try {
           stmt.close();
         } catch (SQLException ex) {
-          Logger.getLogger(CreateFeatureTypePage.class.getName()).
+          Logger.getLogger(Db.class.getName()).
                   log(Level.SEVERE, null, ex);
         } finally {
           try {
             conn.close();
           } catch (SQLException ex) {
-            Logger.getLogger(CreateFeatureTypePage.class.getName()).
+            Logger.getLogger(Db.class.getName()).
                     log(Level.SEVERE, null, ex);
           }
         }
@@ -79,19 +79,19 @@ public class Db {
       stmt = conn.createStatement();
       stmt.executeUpdate(update);
     } catch (SQLException ex) {
-      Logger.getLogger(CreateFeatureTypePage.class.getName()).
+      Logger.getLogger(Db.class.getName()).
               log(Level.SEVERE, null, ex);
     } finally {
       try {
         stmt.close();
       } catch (SQLException ex) {
-        Logger.getLogger(CreateFeatureTypePage.class.getName()).
+        Logger.getLogger(Db.class.getName()).
                 log(Level.SEVERE, null, ex);
       } finally {
         try {
           conn.close();
         } catch (SQLException ex) {
-          Logger.getLogger(CreateFeatureTypePage.class.getName()).
+          Logger.getLogger(Db.class.getName()).
                   log(Level.SEVERE, null, ex);
         }
       }
@@ -103,7 +103,7 @@ public class Db {
     try {
       Class.forName("org.postgresql.Driver");
     } catch (ClassNotFoundException ex) {
-      Logger.getLogger(CreateFeatureTypePage.class.getName()).
+      Logger.getLogger(Db.class.getName()).
               log(Level.SEVERE, null, ex);
     }
 
@@ -115,7 +115,7 @@ public class Db {
               (String) params.get("user"),
               (String) params.get("passwd"));
     } catch (SQLException ex) {
-      Logger.getLogger(CreateFeatureTypePage.class.getName()).
+      Logger.getLogger(Db.class.getName()).
               log(Level.SEVERE, null, ex);
     }
     return conn;

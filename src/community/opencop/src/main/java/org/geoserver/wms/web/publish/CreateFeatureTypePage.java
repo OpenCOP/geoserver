@@ -1,5 +1,7 @@
 package org.geoserver.wms.web.publish;
 
+import com.geocent.opencop.db.util.Row;
+import com.geocent.opencop.db.util.DbUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;

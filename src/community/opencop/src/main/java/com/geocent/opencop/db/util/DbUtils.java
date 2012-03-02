@@ -1,4 +1,4 @@
-package org.geoserver.wms.web.publish;
+package com.geocent.opencop.db.util;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,9 +10,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
-import org.geoserver.catalog.DataStoreInfo;
 import org.geoserver.catalog.StoreInfo;
-import org.geoserver.catalog.impl.DataStoreInfoImpl;
 import org.geoserver.web.GeoServerApplication;
 
 /**
@@ -126,6 +124,26 @@ public class DbUtils {
         + "AND table_name = '%s';", tablename);
     return (Long) Db.query(storeInfo, query, new First("count")) > 0;
 
+  }
+
+  public static void addEditUrlColumn(StoreInfo storeInfo, String tablename) {
+    String update = String.format( "ALTER TABLE \"%s\" ADD COLUMN edit_url text", tablename);
+    Db.update(storeInfo, update);
+    Logger.getLogger(DbUtils.class.getName())
+      .log(Level.INFO, "Added edit_url column to table: {0}", tablename);
+  }
+
+  public static void setEditUrls(StoreInfo storeInfo, String tablename) {
+    StringBuilder update = new StringBuilder("UPDATE \"");
+    update.append(tablename).append("\" SET edit_url = ");
+    update.append("'<a href=\"http://").append(getDomain()).append("/geoserver/wfs");
+    update.append("?request=GetFeature&version=1.0.0&outputFormat=html&typeName=");
+    update.append(storeInfo.getWorkspace().getName()).append(":").append(tablename);
+    update.append("&FEATUREID=' || fid || '\" target=\"_blank\" style=\"color:red;\">Edit</a>';");
+
+    Db.update(storeInfo, update.toString());
+    Logger.getLogger(DbUtils.class.getName())
+      .log(Level.INFO, "Set edit_url: {0}", update.toString());
   }
 
   /**

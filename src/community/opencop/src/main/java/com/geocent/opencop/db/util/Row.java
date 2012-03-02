@@ -1,4 +1,4 @@
-package org.geoserver.wms.web.publish;
+package com.geocent.opencop.db.util;
 
 import java.io.Serializable;
 
