@@ -6,35 +6,23 @@
       <form wicket:id="form">
         <ul>
           <li>
-            <label for="username">User Name</label>
-            <input wicket:id="username" type="text"/>
-          </li>
-          <li>
-            <label for="password">Password</label>
-            <input wicket:id="password" type="password"/>
-          </li>
-          <li>
-            <label for="url">Url</label>
-            <input wicket:id="url" type="text"/>
-          </li>
-          <li>
             <label for="storesDropDown">Datastore</label>
             <select wicket:id="storesDropDown"></select>
           </li>
           <li>
             <label for="defaultStyle"><wicket:message key="defaultStyle">Default Style</wicket:message></label>
-            <select id="defaultStyle" class="select" wicket:id="defaultStyle"></select>
+            <select id="defaultStyle" wicket:id="defaultStyle"></select>
           </li>
           <li>
             <img wicket:id="defaultStyleLegendGraphic"></img>
           </li>
           <li>
             <label for="layerTitle">Layer Title</label>
-            <input wicket:id="layerTitle" type="text"/>
+            <input wicket:id="layerTitle" type="text" class="text"/>
           </li>
           <li>
             <label for="shapefileName">Shapefile Name</label>
-            <input wicket:id="shapefileName" type="text"/>
+            <input wicket:id="shapefileName" type="text" class="text"/>
           </li>
           <li>
             <label for="file">Shapefile ZIP</label>
