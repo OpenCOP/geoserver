@@ -31,6 +31,7 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.HiddenField;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
+import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.CompoundPropertyModel;
@@ -44,6 +45,7 @@ import org.geoserver.catalog.LayerInfo;
 import org.geoserver.catalog.StoreInfo;
 import org.geoserver.catalog.StyleInfo;
 import org.geoserver.web.GeoServerApplication;
+import org.geoserver.web.GeoServerHomePage;
 import org.geoserver.web.data.resource.ResourceConfigurationPage;
 import org.geoserver.web.data.store.StoreListChoiceRenderer;
 import org.geoserver.web.data.store.PostGISStoreListModel;
@@ -274,6 +276,8 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
           defaultStyleUpdater.updateStyleImage(target);
         }
       });
+
+//      add(new BookmarkablePageLink("cancel", GeoServerHomePage.class));
     }
 
     @Override

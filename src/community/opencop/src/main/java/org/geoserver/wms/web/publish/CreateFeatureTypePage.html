@@ -67,12 +67,13 @@
         function buildIconTable(json) {
           var props = $(json.features).map(function(i, n) { return n.properties })
           $('#got').text(props.length)
-          var table = $('<table>')
+          var table = $('<table>').width('25em')
           props.each(function(i, n) {
             var img = $('<img>').attr('src', n.url)
+            var imgtd = $('<td>').append(img)
             var name = $('<td>').text(n.name)
             var tr = $('<tr>')
-            .append(img, name)
+            .append(imgtd, name)
             .click(function() {selectIcon(img)})
             table.append(tr)
           })
@@ -174,7 +175,7 @@
           <div id="icon-display-area">Loading icon images...</div>
           <label for="iconname">Icon Full Url</label>
           <img src="" id="icon-preview" />
-          <input type="text" size="60" id="iconname" wicket:id="iconname"
+          <input type="text" class="text" id="iconname" wicket:id="iconname"
                  onkeyup="eoc.updateIconPreview()"></input>
         </div>
 
@@ -195,6 +196,8 @@
           </tr>
         </table>  
       </fieldset>
+
+
       <input type="submit" value="Save Feature Type" />
       <!--    <div class="button-group selfclear">
             <a href="#" wicket:id="save"><wicket:message key="save">Save</wicket:message></a>
