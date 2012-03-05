@@ -21,16 +21,16 @@
             var queryStr = $('#icon-search-terms').val()
             var cql = cqlStr(queryStr)
             $.getJSON(
-              "/geoserver/wfs",
-              { request: "GetFeature",
-                version: "1.1.0",
-                typeName: "opencop:icon",
-                outputFormat: "JSON",
-                maxFeatures: 10,
-                // startIndex: 10,  // will be used for pagination
-                CQL_FILTER: cql},
-              buildIconTable
-            );
+            "/geoserver/wfs",
+            { request: "GetFeature",
+              version: "1.1.0",
+              typeName: "opencop:icon",
+              outputFormat: "JSON",
+              maxFeatures: 10,
+              // startIndex: 10,  // will be used for pagination
+              CQL_FILTER: cql},
+            buildIconTable
+          );
             setOutOfHowMany(cql)
           }
 
@@ -132,19 +132,28 @@
     </script>
   </wicket:head>
   <body>
-    <wicket:extend>
-      <form wicket:id="featureTypeForm" onsubmit="return eoc.onsubmit()">
+  <wicket:extend>
+    <form wicket:id="featureTypeForm" onsubmit="return eoc.onsubmit()">
+      <fieldset>
+        <ul>
+          <li>
+            <label for="layername">Layer Name</label>
+            <input type="text" class="text" wicket:id="layername"></input>
+          </li>
+          <li>
+            <label for="storesDropDown">Data Store</label>
+            <select wicket:id="storesDropDown"></select>
+          </li>
+        </ul>
+      </fieldset>
 
-        <label for="layername">Layer Name</label>
-        <input type="text" wicket:id="layername"></input>
 
-        <label for="storesDropDown">Data Store</label>
-        <select wicket:id="storesDropDown"></select>
+      <fieldset>
+        <legend><span><wicket:message key="style">Style</wicket:message></span></legend> 
 
-        <h2>Style</h2>
-        <label for="useExistingStyle">Use an Existing Style</label>
-        <input type="checkbox" wicket:id="useExistingStyle"
-               onclick="eoc.changeStyleOption(this)" />
+        <input id="useExistingStyle" class="field checkbox" type="checkbox" wicket:id="useExistingStyle" onclick="eoc.changeStyleOption(this)"></input>
+        <label for="useExistingStyle" class="choice"><wicket:message key="useExistingStyle">Use an Existing Style</wicket:message></label>
+
         <!-- use an existing style -->
         <div id="use-existing-style-block" style="display:none">
           <ul>
@@ -160,7 +169,7 @@
         <!-- use a new style -->
         <div id="use-new-style-block" >
           <label for="icon-search-terms">Icon Search</label>
-          <input type="text" id="icon-search-terms" onkeypress="eoc.iconSearch()" />
+          <input type="text" class="text" id="icon-search-terms" onkeypress="eoc.iconSearch()" />
           <p>Viewing <span id="got">0</span> of <span id="total">?</span> icons</p>
           <div id="icon-display-area">Loading icon images...</div>
           <label for="iconname">Icon Full Url</label>
@@ -170,20 +179,28 @@
         </div>
 
         <input type="hidden" wicket:id="serialized-fields"></input>
+      </fieldset>
 
-        <h2>Schema</h2>
+
+      <fieldset>
+        <legend><span><wicket:message key="schema">Schema</wicket:message></span></legend> 
         <p style="margin:15px 0px 0px 0px">
           <span class="add-link" onclick="eoc.addField()">Add new attribute</span>
         </p>
         <table class="fields">
           <tr wicket:id="schema" class="field">
             <td><span class="remove-link" onclick="eoc.deleteField(this)"></span></td>
-            <td><input type="text" wicket:id="name" class="name"></input></td>
+            <td><input type="text" wicket:id="name" class="text name"></input></td>
             <td><select wicket:id="type" class="type"></select></td>
           </tr>
-        </table>
-        <input type="submit" value="Save Feature Type" />
-      </form>
-    </wicket:extend>
-  </body>
+        </table>  
+      </fieldset>
+      <input type="submit" value="Save Feature Type" />
+      <!--    <div class="button-group selfclear">
+            <a href="#" wicket:id="save"><wicket:message key="save">Save</wicket:message></a>
+            <a href="#" wicket:id="cancel"><wicket:message key="cancel">Cancel</wicket:message></a>
+          </div>-->
+    </form>
+  </wicket:extend>
+</body>
 </html>
