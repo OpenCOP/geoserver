@@ -27,7 +27,7 @@ import org.geoserver.ows.util.ResponseUtils;
 import org.geoserver.web.CatalogIconFactory;
 import org.geoserver.web.GeoServerSecuredPage;
 import org.geoserver.web.data.store.StoreListChoiceRenderer;
-import org.geoserver.web.data.store.StoreListModel;
+import org.geoserver.web.data.store.PostGISStoreListModel;
 import org.springframework.security.userdetails.User;
 
 public class UploadShapefilePage extends GeoServerSecuredPage {
@@ -105,6 +105,11 @@ public class UploadShapefilePage extends GeoServerSecuredPage {
       }
     };
     add(form);
+    
+    // create the datastore picker
+    stores = new DropDownChoice("storesDropDown", new Model(), new PostGISStoreListModel(), new StoreListChoiceRenderer());
+    stores.setOutputMarkupId(true);
+    form.add(stores);
 
     // default styleXml chooser. A default styleXml is required
     defaultStyleModel = new Model();
@@ -134,10 +139,6 @@ public class UploadShapefilePage extends GeoServerSecuredPage {
     });
 
     // create the input fields
-    stores = new DropDownChoice("storesDropDown", new Model(), new StoreListModel(), new StoreListChoiceRenderer());
-    stores.setOutputMarkupId(true);
-    form.add(stores);
-
     form.add(layerTitle = new TextField<String>("layerTitle", new Model<String>()));
     form.add(shapefileName = new TextField<String>("shapefileName", new Model<String>()));
     form.add(file = new FileUploadField("file"));

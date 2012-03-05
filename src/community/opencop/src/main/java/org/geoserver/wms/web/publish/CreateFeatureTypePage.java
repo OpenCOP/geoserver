@@ -46,7 +46,7 @@ import org.geoserver.catalog.StyleInfo;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.data.resource.ResourceConfigurationPage;
 import org.geoserver.web.data.store.StoreListChoiceRenderer;
-import org.geoserver.web.data.store.StoreListModel;
+import org.geoserver.web.data.store.PostGISStoreListModel;
 import org.geoserver.web.wicket.ParamResourceModel;
 import org.geotools.data.DataStore;
 import org.geotools.data.FeatureSource;
@@ -228,7 +228,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
       add(stores = (DropDownChoice) new DropDownChoice(
               "storesDropDown",
               new Model(),
-              new StoreListModel(),
+              new PostGISStoreListModel(),
               new StoreListChoiceRenderer())
             .setOutputMarkupId(true));
       add(new HiddenField<String>("serialized-fields")
