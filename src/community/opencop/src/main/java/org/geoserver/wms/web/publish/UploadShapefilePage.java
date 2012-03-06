@@ -1,5 +1,6 @@
 package org.geoserver.wms.web.publish;
 
+import com.geocent.opencop.db.util.DbUtils;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.SubmitLink;
@@ -23,6 +25,8 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.protocol.http.WebRequest;
 import org.apache.wicket.util.lang.Bytes;
 import org.geoserver.catalog.Catalog;
+import org.geoserver.catalog.DataStoreInfo;
+import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.LayerInfo;
 import org.geoserver.catalog.ResourceInfo;
 import org.geoserver.catalog.StoreInfo;
@@ -43,6 +47,7 @@ public class UploadShapefilePage extends GeoServerSecuredPage {
   private final Model defaultStyleModel;
   private final TextField<String> layerTitle;
   private final FileUploadField file;
+  private final CheckBox addEditLinks;
   private final User principal;
 
   public UploadShapefilePage() {
@@ -71,6 +76,9 @@ public class UploadShapefilePage extends GeoServerSecuredPage {
     file = new FileUploadField("file");
     file.setRequired(true);
     form.add(file);
+
+    // create the add edit links checkbox
+    form.add(addEditLinks = new CheckBox("addEditLinks", new Model<Boolean>()));
 
     // create the save and cancel buttons
     form.add(new BookmarkablePageLink("cancel", GeoServerHomePage.class));
@@ -149,8 +157,11 @@ public class UploadShapefilePage extends GeoServerSecuredPage {
       } else {    
         info("File-Name: " + upload.getClientFileName() + " File-Size: "
             + Bytes.bytes(upload.getSize()).toString());
+        Catalog catalog = getCatalog();
         // Set the title and style for the layer
-        updateLayer(getCatalog(), workspace, sfname);
+        updateLayer(catalog, workspace, sfname);
+        // add edit links to the feature type
+        addEditLinks(catalog, workspace, sfname);
       }
     } catch (IOException ex) {
       Logger.getLogger(UploadShapefilePage.class.getName()).log(Level.SEVERE, null, ex);
@@ -249,6 +260,27 @@ public class UploadShapefilePage extends GeoServerSecuredPage {
     }
     // Save the layer and resource
     catalog.save(layerInfo);
+  }
+
+  private void addEditLinks(Catalog catalog, String workspace, String layer) {
+    // Only add the edit links if the user wants
+    if (addEditLinks.getModelObject()) {
+      // Get all the catalog objects needed
+      LayerInfo layerInfo = catalog.getLayerByName(workspace + ":" + layer);
+      StoreInfo store = layerInfo.getResource().getStore();
+      String layerName = layerInfo.getName();
+      DataStoreInfo dsInfo = catalog.getDataStore(store.getId());
+
+      // Do the database work
+      DbUtils.addEditUrlColumn(store, layerName);
+      DbUtils.setEditUrls(store, layerName);
+      DbUtils.createEditUrlRule(store, layerName);
+
+      // Refresh the in memory catalog so GeoServer knows about the new field
+      FeatureTypeInfo ft = catalog.getFeatureTypeByDataStore(dsInfo, layerName);
+      catalog.getResourcePool().clear(ft);
+      catalog.getResourcePool().clear(ft.getStore());
+    }
   }
 
 }
