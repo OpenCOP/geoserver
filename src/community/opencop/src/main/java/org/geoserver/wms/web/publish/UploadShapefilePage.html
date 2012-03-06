@@ -4,6 +4,7 @@
 
     <div> 
       <form wicket:id="form">
+        <fieldset>
         <ul>
           <li>
             <label for="storesDropDown"><wicket:message key="storesDropDown">Datastore</wicket:message></label>
@@ -21,15 +22,15 @@
             <input wicket:id="layerTitle" type="text" class="text"/>
           </li>
           <li>
-            <label for="shapefileName"><wicket:message key="shapefileName">Shapefile Name</wicket:message></label>
-            <input wicket:id="shapefileName" type="text" class="text"/>
-          </li>
-          <li>
             <label for="file"><wicket:message key="file">Shapefile ZIP</wicket:message></label>
-            <input wicket:id="file" type="file"/><br/><br/>
+            <input wicket:id="file" type="file"/>
           </li>
         </ul>
-        <input type="submit" value="Submit"/>
+        </fieldset>
+        <div class="button-group selfclear">
+          <a href="#" wicket:id="save"><wicket:message key="save">Save</wicket:message></a>
+          <a href="#" wicket:id="cancel"><wicket:message key="cancel">Cancel</wicket:message></a>
+        </div>
       </form>
     </div> 
   </wicket:extend>
