@@ -15,16 +15,42 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class NCDataCacher {
     /* TODO: Make this build configurable */
-    private static String scratchLocation = "C:\\geoserverNetCDFCache\\";
+    private static String scratchLocation = null;
     private static boolean dirty = false;
     private static ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private static HashMap<CacheKey, File> ncFileMap = new HashMap<CacheKey, File>();
 
     static {
+        /* First lets check if there is a system variable that specifies the "Home" location of our netcdf plugin */
+        Map<String, String> env = System.getenv();
+        scratchLocation = System.getenv("GEOSERVER_NETCDF_PLUGIN_HOME");
+        if (scratchLocation == null || scratchLocation.isEmpty()) {
+            /* Ok we'll read in from the property file */
+            InputStream in = NCDataCacher.class.getClassLoader().getResourceAsStream("/system.properties");
+            if (in != null) {
+                Properties props = new Properties();
+                try {
+                    props.load(in);
+                    scratchLocation = props.getProperty("GEOSERVER_NETCDF_PLUGIN_HOME");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            /* Still null? */
+            if (scratchLocation == null || scratchLocation.isEmpty())
+                scratchLocation = "./cache"; /* I guess this is the default */
+        }
+        /* The code does not expect a tailing slash */
+        if (scratchLocation.charAt(scratchLocation.length()-1) == '\\' || scratchLocation.charAt(scratchLocation.length()-1) == '/') {
+            scratchLocation = scratchLocation.substring(0, scratchLocation.length() - 1);
+        }
         File f = new File(scratchLocation);
         if (!f.isDirectory()) {
             System.out.println("Warning, " + scratchLocation + " did not exist, creating it");
@@ -68,7 +94,7 @@ public class NCDataCacher {
     public static void putNCData(String parameter, Double elevation, Date time, NCDataEncapsulator data) {
         ObjectOutput output = null;
         data.flatten();
-        String filename = scratchLocation + "NCDataFile" + parameter + elevation.toString() + Long.toHexString(time.getTime()) + ".ncDataEncapsulator";
+        String filename = scratchLocation + "/NCDataFile" + parameter + elevation.toString() + Long.toHexString(time.getTime()) + ".ncDataEncapsulator";
         try {
             OutputStream file = new FileOutputStream(filename);
             OutputStream buffer = new BufferedOutputStream(file);
