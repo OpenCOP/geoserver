@@ -30,36 +30,23 @@ public class NCDataCacher {
     static {
         /* First lets check if there is a system variable that specifies the "Home" location of our netcdf plugin */
         Map<String, String> env = System.getenv();
-        scratchLocation = System.getenv("GEOSERVER_NETCDF_PLUGIN_HOME");
+        scratchLocation = System.getenv("GEOSERVER_DATA_DIR");
         if (scratchLocation == null || scratchLocation.isEmpty()) {
-            /* Ok we'll read in from the property file */
-            InputStream in = NCDataCacher.class.getClassLoader().getResourceAsStream("/system.properties");
-            if (in != null) {
-                Properties props = new Properties();
-                try {
-                    props.load(in);
-                    scratchLocation = props.getProperty("GEOSERVER_NETCDF_PLUGIN_HOME");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            System.out.println("WARNING GEOSERVER_DATA_DIR MUST BE SET AND WRITABLE OR YOU WILL HAVE TERRIBLE PERFORMANCE!!! TERRRRRIBLLLEEEE");
+        } else {
+            File f = new File(scratchLocation);
+            if (!f.isDirectory()) {
+                System.out.println("Warning, " + scratchLocation + " did not exist, creating it");
+                f.mkdirs();
             }
-            /* Still null? */
-            if (scratchLocation == null || scratchLocation.isEmpty())
-                scratchLocation = "./cache"; /* I guess this is the default */
-        }
-        /* The code does not expect a tailing slash */
-        if (scratchLocation.charAt(scratchLocation.length()-1) == '\\' || scratchLocation.charAt(scratchLocation.length()-1) == '/') {
-            scratchLocation = scratchLocation.substring(0, scratchLocation.length() - 1);
-        }
-        File f = new File(scratchLocation);
-        if (!f.isDirectory()) {
-            System.out.println("Warning, " + scratchLocation + " did not exist, creating it");
-            f.mkdirs();
         }
         clearCache();
     }
 
     public static NCDataEncapsulator getNCData(String parameter, Double elevation, Date time) {
+        if (scratchLocation == null)
+            return null;
+
         CacheKey key = new CacheKey(parameter, elevation, time);
         NCDataEncapsulator data = null;
         try {
@@ -92,6 +79,9 @@ public class NCDataCacher {
     }
 
     public static void putNCData(String parameter, Double elevation, Date time, NCDataEncapsulator data) {
+        if (scratchLocation == null)
+            return;
+
         ObjectOutput output = null;
         data.flatten();
         String filename = scratchLocation + "/NCDataFile" + parameter + elevation.toString() + Long.toHexString(time.getTime()) + ".ncDataEncapsulator";
@@ -122,11 +112,13 @@ public class NCDataCacher {
     }
 
     public static void clearCache() {
+        if (scratchLocation == null)
+            return;
         try {
             lock.writeLock().lock();
             ncFileMap.clear();
             for (File file : new File(scratchLocation).listFiles()) {
-                if (file.isFile() && file.getName().contains("ncDataEncapsulator"))
+                if (file.isFile() && file.getName().contains(".ncDataEncapsulator"))
                     file.delete();
             }
         } catch (Exception e) {
