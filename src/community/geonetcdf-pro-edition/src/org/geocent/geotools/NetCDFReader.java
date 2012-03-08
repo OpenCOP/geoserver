@@ -110,17 +110,17 @@ public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCo
         }
         if (paramInfo.elevation == null)
             paramInfo.elevation = 0.0;
-        NCDataEncapsulator savedNCData = NCDataCacher.getNCData("water_temp", paramInfo.elevation, paramInfo.time);
+        NCDataEncapsulator savedNCData = NCDataCacher.getNCData(paramInfo.parameter, paramInfo.elevation, paramInfo.time);
         if (savedNCData == null) {
-            NCDataEncapsulator ncData = fileInsp.parseFiles(rootDir, "water_temp", paramInfo.elevation, paramInfo.time, paramInfo.requestedEnvelope);
+            NCDataEncapsulator ncData = fileInsp.parseFiles(rootDir, paramInfo.parameter, paramInfo.elevation, paramInfo.time, paramInfo.requestedEnvelope);
             savedNCData = ncData;
-            NCDataCacher.putNCData("water_temp", paramInfo.elevation, paramInfo.time, ncData);
+            NCDataCacher.putNCData(paramInfo.parameter, paramInfo.elevation, paramInfo.time, ncData);
         }
 
         NCDataEncapsulator ncData = savedNCData;
 
         final GridCoverageFactory factory = new GridCoverageFactory(hints);
-        GridCoverage2D coverage = factory.create("water_temp", ncData.getWritableRaster(), geographicArea);
+        GridCoverage2D coverage = factory.create(rootDir.getName(), ncData.getWritableRaster(), geographicArea);
         return coverage;
     }
 
@@ -138,6 +138,7 @@ public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCo
         OverviewPolicy overviewPolicy = null;
         Double elevation = null;
         Date time = null;
+        String parameter = null;
 
         for (int i = 0; i < params.length; i++) {
             final ParameterValue<?> param = (ParameterValue<?>) params[i];
@@ -155,6 +156,10 @@ public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCo
                 if (param.getValue() != null && ((Double) param.getValue()) != 0.0) {
                     elevation = (Double) param.getValue();
                 }
+            }
+
+            if (name.equals(NetCDFFormat.PARAMETER.getName().toString())) {
+                parameter = (String) param.getValue();
             }
 
             if (name.equals(AbstractGridFormat.READ_GRIDGEOMETRY2D.getName().toString())) {
@@ -216,6 +221,8 @@ public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCo
         parsedParams.overviewPolicy = overviewPolicy;
         parsedParams.time = time;
         parsedParams.elevation = elevation;
+        parsedParams.parameter = parameter;
+            
         return parsedParams;
 
     }

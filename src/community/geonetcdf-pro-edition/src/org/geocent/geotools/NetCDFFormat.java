@@ -23,6 +23,8 @@ public class NetCDFFormat extends AbstractGridFormat implements Format {
     private static String UNSUPPORTED_WRITING_OPERATION_MESSAGE = "Writing operations are not implemented";
     private static String CANNOT_CREATE_READER_MESSAGE = "Cannot create Netcdf Reader without a directory of netcdf files";
 
+    /* The NetCDF Parameter component */
+    public static final ParameterDescriptor<String> PARAMETER = new DefaultParameterDescriptor<String>("NETCDFPARAMETER", String.class, null, "water_temp");
     /* The WMS time component */
     public static final ParameterDescriptor<List> TIME = new DefaultParameterDescriptor<List>("TIME", List.class, null, null);
     /* The WMS elevation component */
@@ -38,8 +40,9 @@ public class NetCDFFormat extends AbstractGridFormat implements Format {
         mInfo.put("description", "NetCDF reader");
         mInfo.put("vendor", "Geocent");
         mInfo.put("version", "0.1");
-        readParameters = new ParameterGroup(new DefaultParameterDescriptorGroup(mInfo, new GeneralParameterDescriptor[] { READ_GRIDGEOMETRY2D, ELEVATION, TIME,
-                FILTER }));
+        readParameters = new ParameterGroup(new DefaultParameterDescriptorGroup(mInfo, 
+                new GeneralParameterDescriptor[] { 
+                  READ_GRIDGEOMETRY2D, PARAMETER, ELEVATION, TIME, FILTER }));
 
     }
 
