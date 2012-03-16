@@ -6,18 +6,13 @@ import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.model.IModel;
-import org.geoserver.catalog.DataStoreInfo;
-import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.LayerInfo;
 import org.geoserver.catalog.StoreInfo;
 import org.geoserver.web.CatalogIconFactory;
-import org.geoserver.web.GeoServerSecuredPage;
 import org.geoserver.web.wicket.GeoServerTablePanel;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
-import com.geocent.opencop.db.util.DbUtils;
-import org.geoserver.catalog.Catalog;
 
-public class AddEditUrlPage extends GeoServerSecuredPage {
+public class AddEditUrlPage extends AbstractOpenCopPage {
 
   AddEditUrlLayerProvider provider = new AddEditUrlLayerProvider();
   GeoServerTablePanel<LayerInfo> table;
@@ -63,22 +58,11 @@ public class AddEditUrlPage extends GeoServerSecuredPage {
 
             public void onClick() {
               // Get all the catalog objects needed
-              Catalog catalog = getCatalog();
               LayerInfo layer = (LayerInfo) getModelObject();
               StoreInfo store = layer.getResource().getStore();
-              DataStoreInfo dsInfo = catalog.getDataStore(store.getId());
               String layerName = layer.getName();
 
-              // Do the database work
-              DbUtils.addEditUrlColumn(store, layerName);
-              DbUtils.setEditUrls(store, layerName);
-              DbUtils.createEditUrlRule(store, layerName);
-
-              // Refresh the in memory catalog so GeoServer knows about the new field
-              FeatureTypeInfo ft = catalog.getFeatureTypeByDataStore(dsInfo, layerName);
-              catalog.getResourcePool().clear(ft);
-              catalog.getResourcePool().clear(ft.getStore());
-
+              addEditLinks(store, layerName);
               info("Added edit URLs to layer: " + layerName);
             }
           });

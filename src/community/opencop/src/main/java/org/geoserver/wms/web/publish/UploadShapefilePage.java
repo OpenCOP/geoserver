@@ -1,13 +1,11 @@
 package org.geoserver.wms.web.publish;
 
-import com.geocent.opencop.db.util.DbUtils;
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -22,25 +20,20 @@ import org.apache.wicket.markup.html.form.upload.FileUploadField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.protocol.http.WebRequest;
 import org.apache.wicket.util.lang.Bytes;
 import org.geoserver.catalog.Catalog;
-import org.geoserver.catalog.DataStoreInfo;
-import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.LayerInfo;
 import org.geoserver.catalog.ResourceInfo;
 import org.geoserver.catalog.StoreInfo;
 import org.geoserver.catalog.StyleInfo;
-import org.geoserver.ows.util.ResponseUtils;
 import org.geoserver.rest.util.RESTUtils;
 import org.geoserver.web.GeoServerHomePage;
-import org.geoserver.web.GeoServerSecuredPage;
 import org.geoserver.web.data.store.StoreListChoiceRenderer;
 import org.geoserver.web.data.store.PostGISStoreListModel;
 import org.restlet.data.MediaType;
 import org.springframework.security.userdetails.User;
 
-public class UploadShapefilePage extends GeoServerSecuredPage {
+public class UploadShapefilePage extends AbstractOpenCopPage {
 
   private final Form form;
   private final DropDownChoice stores;
@@ -159,9 +152,16 @@ public class UploadShapefilePage extends GeoServerSecuredPage {
             + Bytes.bytes(upload.getSize()).toString());
         Catalog catalog = getCatalog();
         // Set the title and style for the layer
-        updateLayer(catalog, workspace, sfname);
-        // add edit links to the feature type
-        addEditLinks(catalog, workspace, sfname);
+        updateLayerInfo(catalog, workspace, sfname);
+        
+        // Only add the edit links if the user wants
+        if (addEditLinks.getModelObject()) {
+          // Get all the catalog objects needed
+          LayerInfo layerInfo = catalog.getLayerByName(workspace + ":" + sfname);
+          String layerName = layerInfo.getName();
+      
+          addEditLinks(storeInfo, layerName);
+        }
       }
     } catch (IOException ex) {
       Logger.getLogger(UploadShapefilePage.class.getName()).log(Level.SEVERE, null, ex);
@@ -179,14 +179,6 @@ public class UploadShapefilePage extends GeoServerSecuredPage {
         upload.delete();
       }
     }
-  }
-
-  // Get the base url of this geoserver
-  private String getBaseUrl() {
-    WebRequest request = (WebRequest) getRequest();
-    HttpServletRequest httpServletRequest;
-    httpServletRequest = ((WebRequest) request).getHttpServletRequest();
-    return ResponseUtils.baseURL(httpServletRequest);
   }
   
   private String getShapefileName(File uploadedFile, String mediaType, String workspaceName, String storeName) {
@@ -245,7 +237,7 @@ public class UploadShapefilePage extends GeoServerSecuredPage {
     return null;
   }
 
-  private void updateLayer(Catalog catalog, String workspace, String layer) {
+  private void updateLayerInfo(Catalog catalog, String workspace, String layer) {
     // Get the newly created layer
     LayerInfo layerInfo = catalog.getLayerByName(workspace + ":" + layer);
     // Get the chosen style
@@ -260,27 +252,6 @@ public class UploadShapefilePage extends GeoServerSecuredPage {
     }
     // Save the layer and resource
     catalog.save(layerInfo);
-  }
-
-  private void addEditLinks(Catalog catalog, String workspace, String layer) {
-    // Only add the edit links if the user wants
-    if (addEditLinks.getModelObject()) {
-      // Get all the catalog objects needed
-      LayerInfo layerInfo = catalog.getLayerByName(workspace + ":" + layer);
-      StoreInfo store = layerInfo.getResource().getStore();
-      String layerName = layerInfo.getName();
-      DataStoreInfo dsInfo = catalog.getDataStore(store.getId());
-
-      // Do the database work
-      DbUtils.addEditUrlColumn(store, layerName);
-      DbUtils.setEditUrls(store, layerName);
-      DbUtils.createEditUrlRule(store, layerName);
-
-      // Refresh the in memory catalog so GeoServer knows about the new field
-      FeatureTypeInfo ft = catalog.getFeatureTypeByDataStore(dsInfo, layerName);
-      catalog.getResourcePool().clear(ft);
-      catalog.getResourcePool().clear(ft.getStore());
-    }
   }
 
 }

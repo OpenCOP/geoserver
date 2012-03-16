@@ -20,6 +20,7 @@ import org.geoserver.web.GeoServerApplication;
  * @author thanthese
  */
 public class DbUtils {
+  public static final String EDITURL_FIELD = "edit_url";
 
   private DbUtils() { throw new AssertionError(); }  // don't instantiate
 
@@ -127,7 +128,7 @@ public class DbUtils {
   }
 
   public static void addEditUrlColumn(StoreInfo storeInfo, String tablename) {
-    String update = String.format( "ALTER TABLE \"%s\" ADD COLUMN edit_url text", tablename);
+    String update = String.format("ALTER TABLE \"%s\" ADD COLUMN \"%s\" text", tablename, EDITURL_FIELD);
     Db.update(storeInfo, update);
     Logger.getLogger(DbUtils.class.getName())
       .log(Level.INFO, "Added edit_url column to table: {0}", tablename);
@@ -135,8 +136,9 @@ public class DbUtils {
 
   public static void setEditUrls(StoreInfo storeInfo, String tablename) {
     StringBuilder update = new StringBuilder("UPDATE \"");
-    update.append(tablename).append("\" SET edit_url = ");
-    update.append("'<a href=\"http://").append(getDomain()).append("/geoserver/wfs");
+    update.append(tablename).append("\" SET \"");
+    update.append(EDITURL_FIELD).append("\" = ");
+    update.append("'<a href=\"").append(getDomain()).append("/geoserver/wfs");
     update.append("?request=GetFeature&version=1.0.0&outputFormat=html&typeName=");
     update.append(storeInfo.getWorkspace().getName()).append(":").append(tablename);
     update.append("&FEATUREID=' || fid || '\" target=\"_blank\" style=\"color:red;\">Edit</a>';");
@@ -152,14 +154,14 @@ public class DbUtils {
    *
    * @param si
    * @param tableName
-   * @param domain e.g.: "demo.geocent.com"
+   * @param domain e.g.: "http://demo.geocent.com"
    */
   public static void createEditUrlRule(StoreInfo storeInfo, String tableName) {
-    String updateTemplate = "create or replace rule \"edit_url_%s\" "
+    String updateTemplate = "create or replace rule \"%s_%s\" "
             + "as on insert to \"%s\" "
             + "do also update \"%s\" "
             + "set edit_url = "
-              + "'<a href=\"http://%s/geoserver/wfs"
+              + "'<a href=\"%s/geoserver/wfs"
                 + "?request=GetFeature"
                 + "&version=1.0.0"
                 + "&outputFormat=html"
@@ -167,6 +169,7 @@ public class DbUtils {
                 + "&FEATUREID=' || fid || "
               + "'\" target=\"_blank\" style=\"color:red;\">Edit</a>';";
     String update = String.format(updateTemplate,
+            EDITURL_FIELD,
             tableName,
             tableName,
             tableName,

@@ -57,7 +57,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-public class CreateFeatureTypePage extends GeoServerSecuredPage {
+public class CreateFeatureTypePage extends AbstractOpenCopPage {
   static final CoordinateReferenceSystem WGS84;
 
   static {
@@ -186,7 +186,7 @@ public class CreateFeatureTypePage extends GeoServerSecuredPage {
     List<Row> defaultRows = new ArrayList(Arrays.asList(new Row[]{
               new Row("version", "Integer"),
               new Row("description", "Text(500)"),
-              new Row("edit_url", "Text(500)"),
+              new Row("edit_url", "Text"),
               new Row("the_geom", "Point")}));
 
     ListView lv = null;  // represents attrs list in form

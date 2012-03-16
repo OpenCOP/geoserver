@@ -1,5 +1,6 @@
 package org.geoserver.wms.web.publish;
 
+import com.geocent.opencop.db.util.DbUtils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +46,7 @@ public class AddEditUrlLayerProvider extends GeoServerDataProvider<LayerInfo> {
 
       try {
         for (AttributeTypeInfo attr : ft.attributes()) {
-          if ("edit_url".equalsIgnoreCase(attr.getName())) {
+          if (DbUtils.EDITURL_FIELD.equalsIgnoreCase(attr.getName())) {
             return true;
           }
         }
