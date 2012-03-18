@@ -25,7 +25,7 @@ public class NetCDFFormat extends AbstractGridFormat implements Format {
 
     /* The NetCDF Parameter component */
     public static final ParameterDescriptor<String> PARAMETER = new DefaultParameterDescriptor<String>("NETCDFPARAMETER", String.class, null, "water_temp");
-    /* The WMS time component */
+   /* The WMS time component */
     public static final ParameterDescriptor<List> TIME = new DefaultParameterDescriptor<List>("TIME", List.class, null, null);
     /* The WMS elevation component */
     public static final ParameterDescriptor<Double> ELEVATION = new DefaultParameterDescriptor<Double>("ELEVATION", Double.class, null, 0.0);

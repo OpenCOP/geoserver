@@ -1,6 +1,6 @@
 <project name="NetCDF Geoserver plugin" default="deploy">
 
-	<property name="deploy.dir" value="C:\Program Files (x86)\GeoServer 2.1.3\webapps\geoserver\WEB-INF\lib" />
+	<property name="deploy.dir" value="/home/pcoleman/software/geoserver-2.1-SNAPSHOT/webapps/geoserver/WEB-INF/lib" />
 
 	<path id="NetCDFPluginClassPath">
 		<fileset dir="./lib">
@@ -30,7 +30,7 @@
 	</target>
 	<target name="deploy" depends="jar">
 		<copy file="./dist/netcdfReader.jar" todir="${deploy.dir}" />
-		<copy file="./dist/netcdfReader.jar" todir="C:\cygwin\home\pcoleman" />
+		<copy file="./dist/netcdfReader.jar" todir="/home/pcoleman" failonerror="false"/>
 	</target>
 
 	<target name="combine-jars" depends="compile">

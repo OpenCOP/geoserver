@@ -41,11 +41,19 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
 public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCoverageReader {
-    private File rootDir;
 
-    /* We're just going to say we have the entire world for now, later we'll determine which parameters have which information where */
-    private static final Rectangle actualDim = new Rectangle(-180, -90, 179, 89);
+    private File rootDir;
+    //private Rectangle actualDim = new Rectangle(-180, -90, 179, 89);
+    private Rectangle actualDim;
     static GridCoverageFactory gcf = new GridCoverageFactory();
+    /*
+     * In the future the exact file inspector we use can be deteremined by a
+     * metadata file in the netcdf root directory, like if its NRL formatted
+     * data, etc. The purpose of the AbstractFileInspector is to abstract that
+     * all away and get a buffered image back. For now we assume its all "NAVO"
+     * formatted
+     */
+    private AbstractFileInspector fileInsp = new FileInspector();
 
     public NetCDFReader(File netcdfRootDirectory, Hints hints) {
         rootDir = netcdfRootDirectory;
@@ -59,9 +67,12 @@ public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCo
             e1.printStackTrace();
         }
 
-        GeneralEnvelope env = new GeneralEnvelope(new double[] { 0, 0 }, new double[] { 0, 0 });
-        env.setRange(0, -180, 180);
-        env.setRange(1, -90, 90);
+        float[] fileBounds = fileInsp.getBounds(rootDir);
+        actualDim = new Rectangle((int) fileBounds[0], (int) fileBounds[2], (int) fileBounds[1], (int) fileBounds[3]);
+
+        GeneralEnvelope env = new GeneralEnvelope(new double[]{0, 0}, new double[]{0, 0});
+        env.setRange(0, fileBounds[0], fileBounds[1]);
+        env.setRange(1, fileBounds[2], fileBounds[3]);
         env.setCoordinateReferenceSystem(this.crs);
         this.originalGridRange = new GridEnvelope2D(actualDim);
         this.originalEnvelope = env;
@@ -83,21 +94,16 @@ public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCo
     public GridCoverage2D read(GeneralParameterValue[] params) throws IllegalArgumentException, IOException {
 
         ParamInformation paramInfo = paramReader(params);
-        if (params == null)
+        if (params == null) {
             throw new IllegalArgumentException("Params must not be null");
+        }
 
         final Envelope geographicArea = new Envelope2D(DefaultGeographicCRS.WGS84, -180, -89, 360, 180);
 
-        AbstractFileInspector fileInsp = new FileInspector(); /*
-                                                               * In the future the exact file inspector we use can be deteremined by a metadata file in the
-                                                               * netcdf root directory, like if its NRL formatted data, etc. The purpose of the
-                                                               * AbstractFileInspector is to abstract that all away and get a buffered image back. For now we
-                                                               * assume its all "NAVO" formatted
-                                                               */
-
         /*
-         * Our default "in the real world" will the current time and a elevation of 0, but since we have old data, the default for now will be 10-15-2010 since
-         * I know we have some stuff for it
+         * Our default "in the real world" will the current time and a elevation
+         * of 0, but since we have old data, the default for now will be
+         * 10-15-2010 since I know we have some stuff for it
          */
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         if (paramInfo.time == null) {
@@ -108,8 +114,9 @@ public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCo
                 e.printStackTrace();
             }
         }
-        if (paramInfo.elevation == null)
+        if (paramInfo.elevation == null) {
             paramInfo.elevation = 0.0;
+        }
         NCDataEncapsulator savedNCData = NCDataCacher.getNCData(paramInfo.parameter, paramInfo.elevation, paramInfo.time);
         if (savedNCData == null) {
             NCDataEncapsulator ncData = fileInsp.parseFiles(rootDir, paramInfo.parameter, paramInfo.elevation, paramInfo.time, paramInfo.requestedEnvelope);
@@ -124,7 +131,10 @@ public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCo
         return coverage;
     }
 
-    /* paramReader, toNativeCrs and toReferencedEnvelope are heavily based on the ArcSDEGridCoverage2DReaderJAI class in geotools. */
+    /*
+     * paramReader, toNativeCrs and toReferencedEnvelope are heavily based on
+     * the ArcSDEGridCoverage2DReaderJAI class in geotools.
+     */
     @SuppressWarnings("rawtypes")
     private ParamInformation paramReader(GeneralParameterValue[] params) {
         ParamInformation parsedParams = new ParamInformation();
@@ -222,7 +232,7 @@ public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCo
         parsedParams.time = time;
         parsedParams.elevation = elevation;
         parsedParams.parameter = parameter;
-            
+
         return parsedParams;
 
     }
