@@ -12,7 +12,7 @@ import ucar.nc2.NetcdfFile;
 
 abstract public class AbstractFileInspector {
     abstract public NCDataEncapsulator parseFiles(File rootDirectory, String parameterName, Double heightInMeters, Date time, GeneralEnvelope requestedArea);
-
+    abstract public float[] getBounds(File rootDirectory);
     /*
      * In the future we need to have an inventory of known files in the system and what parameters (at the least) they contain, for now we will search for the
      * data we need in every nc file under the root directory
