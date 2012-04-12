@@ -27,9 +27,9 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeType;
 
 /**
- * WFS output format for a GetFeature operation in which the outputFormat is "html".
+ * WFS output format for a GetFeature operation in which the outputFormat is "editor".
  */
-public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
+public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
 
   /**
    * static freemaker configuration
@@ -38,7 +38,7 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
 
   static {
     cfg = new Configuration();
-    cfg.setClassForTemplateLoading(HTMLOutputFormat.class, "");
+    cfg.setClassForTemplateLoading(EditorOutputFormat.class, "");
     BeansWrapper bw = new BeansWrapper();
     bw.setExposureLevel(BeansWrapper.EXPOSE_PROPERTIES_ONLY);
     cfg.setObjectWrapper(bw);
@@ -46,12 +46,12 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
   private GeoJSONOutputFormat jsonFormatter;
   private Map<String, String> typeConversion;
 
-  public HTMLOutputFormat(GeoServer gs) {
+  public EditorOutputFormat(GeoServer gs) {
     //this is the name of your output format, it is the string
     // that will be used when requesting the format in a 
     // GEtFeature request: 
     // ie ;.../geoserver/wfs?request=getfeature&outputFormat=myOutputFormat
-    super(gs, "html");
+    super(gs, "editor");
 
     // Map to convert Java types to Ext types
     typeConversion = new TreeMap<String, String>();
@@ -65,7 +65,7 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
     typeConversion.put("Boolean", "boolean");
   }
 
-  public HTMLOutputFormat(GeoServer gs, GeoJSONOutputFormat json) {
+  public EditorOutputFormat(GeoServer gs, GeoJSONOutputFormat json) {
     this(gs);
     jsonFormatter = json;
   }
@@ -107,7 +107,7 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
           OutputStream output, Operation getFeature) throws IOException,
           ServiceException {
 
-    Template template = cfg.getTemplate("WFSHTMLTemplate.ftl");
+    Template template = cfg.getTemplate("WFSEditorTemplate.ftl");
     template.setOutputEncoding("UTF-8");
     HashMap<String, Object> map = new HashMap<String, Object>();
 
@@ -302,6 +302,6 @@ public class HTMLOutputFormat extends WFSGetFeatureOutputFormat {
 
   @Override
   public String getCapabilitiesElementName() {
-    return "HTML";
+    return "editor";
   }
 }
