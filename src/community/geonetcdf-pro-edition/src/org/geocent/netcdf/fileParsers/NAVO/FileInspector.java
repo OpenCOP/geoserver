@@ -25,13 +25,75 @@ import ucar.nc2.Variable;
 public class FileInspector extends AbstractFileInspector {
 
     /*
-     * The NAVOFileInspector will attempt to find the closest layer and time to match the request, but we have a fudge factor to ensure that data can be
-     * returned even if there isn't a perfect match, the parameters for that are defined here
+     * The NAVOFileInspector will attempt to find the closest layer and time to
+     * match the request, but we have a fudge factor to ensure that data can be
+     * returned even if there isn't a perfect match, the parameters for that are
+     * defined here
+     */
+    private static Double MAX_HOURS_OFF = 3.0; /*
+     * In hours
      */
 
-    private static Double MAX_HOURS_OFF = 3.0; /* In hours */
-    private static Double MAX_ELEVATION_OFF = 50.0; /* In meters */
+    private static Double MAX_ELEVATION_OFF = 50.0; /*
+     * In meters
+     */
+
     private static int DEFAULT_POINTS_PER_DEGREE = 7;
+
+    @Override
+    public synchronized float[] getBounds(File rootDirectory) {
+        LinkedList<File> filesToParse = new LinkedList<File>();
+        recursiveParse(filesToParse, rootDirectory);
+
+        /*
+         * I'm going to put some sane defaults here incase something goes wrong,
+         * we will check to see if its our first run through when looping over
+         * files, if it is the first run through, the reported bounds are used
+         * as the default
+         */
+        float[] minAndMaxLonAndLat = new float[]{-180f, 180f, -90f, 90f};
+        boolean firstFile = true;
+
+        for (File ncFile : filesToParse) {
+            System.out.println("Getting Bounds For " + ncFile.getAbsolutePath());
+            float[] maxBounds = NetCDFParser.getBoundsForFile(ncFile.getAbsolutePath());
+
+            /*
+             * TODO: this could probably stand some cleaning up in the future,
+             * sorry if its unclear (its stupid, sorry)
+             */
+
+            /*
+             * Min longitude compare
+             */
+            if (maxBounds[0] < minAndMaxLonAndLat[0] || firstFile) {
+                minAndMaxLonAndLat[0] = maxBounds[0];
+            }
+            /*
+             * Max longitude compare
+             */
+            if (maxBounds[1] > minAndMaxLonAndLat[1] || firstFile) {
+                minAndMaxLonAndLat[1] = maxBounds[1];
+            }
+            /*
+             * Min latitude compare
+             */
+            if (maxBounds[2] < minAndMaxLonAndLat[2] || firstFile) {
+                minAndMaxLonAndLat[2] = maxBounds[2];
+            }
+            /*
+             * Max latitude compare
+             */
+            if (maxBounds[3] > minAndMaxLonAndLat[3] || firstFile) {
+                minAndMaxLonAndLat[3] = maxBounds[3];
+            }
+            firstFile = false; /*
+             * We have seen the first file, all of the comparsions after this
+             * will need to be real
+             */
+        }
+        return minAndMaxLonAndLat;
+    }
 
     @Override
     public synchronized NCDataEncapsulator parseFiles(File rootDirectory, String parameterName, Double heightInMeters, Date time, GeneralEnvelope requestedArea) {
@@ -46,11 +108,19 @@ public class FileInspector extends AbstractFileInspector {
             try {
                 ncfile = NetcdfFile.open(ncFile.getAbsolutePath());
                 int timeLayer = getTimeLayerInNCFile(ncfile, time);
-                if (timeLayer == -1)
-                    continue; /* No need to continue on, we don't have the appropriate time in this file. */
+                if (timeLayer == -1) {
+                    continue; /*
+                     * No need to continue on, we don't have the appropriate
+                     * time in this file.
+                     */
+                }
                 int elevationLayer = getElevationLayerInNCFile(ncfile, heightInMeters);
-                if (elevationLayer == -1)
-                    continue; /* The time was correct but we don't have the desired elevation in this file. */
+                if (elevationLayer == -1) {
+                    continue; /*
+                     * The time was correct but we don't have the desired
+                     * elevation in this file.
+                     */
+                }
 
                 NetCDFParser ncParser = new NetCDFParser(ncFile.getAbsolutePath(), parameterName, timeLayer, elevationLayer, data);
                 ncParser.parseFile();
@@ -68,7 +138,9 @@ public class FileInspector extends AbstractFileInspector {
         return data;
     }
 
-    /*-1 means the layer wasn't found*/
+    /*
+     * -1 means the layer wasn't found
+     */
     private int getElevationLayerInNCFile(NetcdfFile ncfile, double elevation) {
         String units = null;
         Variable elevationVariable = getVariableByName(ncfile, "depth(");
@@ -79,8 +151,11 @@ public class FileInspector extends AbstractFileInspector {
             return -1;
         }
         Attribute positiveDirection = getAttributeByName(elevationVariable, "positive");
-        if (positiveDirection != null && positiveDirection.getStringValue().toLowerCase().equals("down"))
-            elevation = elevation * -1.0; /* Reverse the sign of elevation, down is up and up is down! */
+        if (positiveDirection != null && positiveDirection.getStringValue().toLowerCase().equals("down")) {
+            elevation = elevation * -1.0; /*
+             * Reverse the sign of elevation, down is up and up is down!
+             */
+        }
 
         try {
             return findClosestIndex(elevationVariable.read(), elevation, MAX_ELEVATION_OFF);
@@ -90,17 +165,21 @@ public class FileInspector extends AbstractFileInspector {
         }
     }
 
-    /*-1 means the layer wasn't found*/
+    /*
+     * -1 means the layer wasn't found
+     */
     private int getTimeLayerInNCFile(NetcdfFile ncfile, Date time) {
         String units = null;
 
         try {
             Variable timeVariable = getVariableByName(ncfile, "time(");
-            if (timeVariable == null)
+            if (timeVariable == null) {
                 return -1;
+            }
             Attribute timeUnitsAttribute = getAttributeByName(timeVariable, "units");
-            if (timeUnitsAttribute == null)
+            if (timeUnitsAttribute == null) {
                 return -1;
+            }
             units = timeUnitsAttribute.getStringValue();
 
             Date startTime = getDateFromString(units);
@@ -119,12 +198,16 @@ public class FileInspector extends AbstractFileInspector {
 
     private Date getDateFromString(String dateString) {
         /*
-         * TODO: In my experience NAVO netcdf time values are always "hour since" *some time*, but we need to confirm this with a subject matter expert on navo
-         * data
+         * TODO: In my experience NAVO netcdf time values are always "hour
+         * since" *some time*, but we need to confirm this with a subject matter
+         * expert on navo data
          */
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
-        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm"); /* Because I've seen it both with and without seconds! TODO: fix this mess */
+        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm"); /*
+         * Because I've seen it both with and without seconds! TODO: fix this
+         * mess
+         */
         sdf2.setTimeZone(TimeZone.getTimeZone("GMT"));
         dateString = dateString.replaceAll("\\p{Alpha}", "").trim();
         Date d = null;
@@ -162,7 +245,9 @@ public class FileInspector extends AbstractFileInspector {
         return attr;
     }
 
-    /* Luckly the two values I'm interested in are doubles */
+    /*
+     * Luckly the two values I'm interested in are doubles
+     */
     private int findClosestIndex(Array a, Double val, Double maxError) {
         IndexIterator ii = a.getIndexIterator();
         double minValueDiff = Double.MAX_VALUE;
@@ -177,7 +262,9 @@ public class FileInspector extends AbstractFileInspector {
         }
 
         if (minValueDiff > maxError) {
-            /* even the closest value this file has is too far off, return -1 */
+            /*
+             * even the closest value this file has is too far off, return -1
+             */
             minValueIndex = -1;
         }
         return minValueIndex;
