@@ -139,7 +139,7 @@ public class DbUtils {
     update.append(tablename).append("\" SET \"");
     update.append(EDITURL_FIELD).append("\" = ");
     update.append("'<a href=\"").append(getDomain()).append("/geoserver/wfs");
-    update.append("?request=GetFeature&version=1.0.0&outputFormat=html&typeName=");
+    update.append("?request=GetFeature&version=1.0.0&outputFormat=editor&typeName=");
     update.append(storeInfo.getWorkspace().getName()).append(":").append(tablename);
     update.append("&FEATUREID=' || fid || '\" target=\"_blank\" style=\"color:red;\">Edit</a>';");
 
@@ -164,7 +164,7 @@ public class DbUtils {
               + "'<a href=\"%s/geoserver/wfs"
                 + "?request=GetFeature"
                 + "&version=1.0.0"
-                + "&outputFormat=html"
+                + "&outputFormat=editor"
                 + "&typeName=%s:%s"
                 + "&FEATUREID=' || fid || "
               + "'\" target=\"_blank\" style=\"color:red;\">Edit</a>';";

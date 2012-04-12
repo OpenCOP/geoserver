@@ -7,7 +7,7 @@
   <artifactId>opencop</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
-  <name>OpenCOP</name>
+  <name>OpenCOP Extension</name>
 
   <parent>
     <groupId>org.geoserver</groupId>
