@@ -14,6 +14,7 @@ import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import net.opengis.wfs.FeatureCollectionType;
 import net.opengis.wfs.GetFeatureType;
@@ -23,8 +24,12 @@ import org.geoserver.platform.Operation;
 import org.geoserver.platform.ServiceException;
 import org.geoserver.wfs.WFSGetFeatureOutputFormat;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.referencing.NamedIdentifier;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeType;
+import org.opengis.feature.type.GeometryDescriptor;
+import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * WFS output format for a GetFeature operation in which the outputFormat is "editor".
@@ -126,6 +131,7 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
     // Get the geometry column's name and type
     map.put("geometryName", getGeometryColumnName(featureType));
     map.put("geometryType", getGeometryColumnType(featureType));
+    map.put("geometryProjection", getGeometryColumnProjection(featureType));
 
     // Get the features JSON
     map.put("featureJson", getFeaturesAsJson(featureCollection, getFeature));
@@ -298,6 +304,35 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
     } else {
       return null;
     }
+  }
+  
+  /**
+   * Returns the geometry's projection in the format needed by OpenLayers (e.g., "EPSG:4326").
+   * 
+   * @param featureType
+   * @return 
+   */
+  private String getGeometryColumnProjection(SimpleFeatureType featureType) {
+    // This implementation is based off of GeoJSONOutputFormat.
+    // For some reason crs.getName() is different than the first crs.getIdentifiers()
+    // even though they return the same class and there is only one in crs.getIdentifiers()
+    GeometryDescriptor gd = featureType.getGeometryDescriptor();
+  
+    if (null != gd) {               
+      CoordinateReferenceSystem crs = gd.getCoordinateReferenceSystem();
+    
+      if (null != crs) {
+        Set<ReferenceIdentifier> ids = crs.getIdentifiers();
+    
+        // WKT defined crs might not have identifiers at all
+        if(ids != null && ids.size() > 0) {
+            NamedIdentifier id = (NamedIdentifier) ids.iterator().next();
+            return id.getCodeSpace().toUpperCase() + ":" + id.getCode();
+        }
+      }
+    } 
+    
+    return null;
   }
 
   @Override

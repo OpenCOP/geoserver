@@ -22,13 +22,6 @@
 
       var map, mapPanel, app;
 
-      function mapd() {
-        console.dir(map);
-      }
-      function appd() {
-        console.dir(app);
-      }
-
       Ext.onReady(function() {
         // Add a renderer to all date columns
         Ext.each(columnsJson, function(column){
@@ -37,23 +30,28 @@
           }
         });
 
+        var vectorProjection = null;
+        <#if geometryProjection??> // could be aspatial
+          vectorProjection = new OpenLayers.Projection("${(geometryProjection!"")?js_string}");
+        </#if>
+        var mapProjection = new OpenLayers.Projection("EPSG:900913");
+        
         // create map instance
         // If you create a map without specifying controls, it creates 
         // with default controls that use images that don't exist.
         // So, I'm manually specifying them so they'll use the correct images.
         map = new OpenLayers.Map({
+          projection: mapProjection.getCode(),
+          displayProjection: vectorProjection,
           controls: [ new OpenLayers.Control.Navigation(),
             new OpenLayers.Control.Attribution(),
             new OpenLayers.Control.PanPanel(),
-            new OpenLayers.Control.ZoomPanel() ]
+            new OpenLayers.Control.ZoomPanel(),
+            new OpenLayers.Control.MousePosition() ]
         });
         
         // Add a default base layer
-        var baseLayer = new OpenLayers.Layer.WMS(
-          "Base Layer",
-          "http://vmap0.tiles.osgeo.org/wms/vmap0",
-          {layers: 'basic'}
-        );
+        var baseLayer = new OpenLayers.Layer.OSM();
 
         var saveStrategy = new OpenLayers.Strategy.Save();
         // Alert the user that the WFS-T has succeeded
@@ -102,22 +100,26 @@
         var vectorLayer = new OpenLayers.Layer.Vector("${layerName?js_string}",
         {
           strategies:[saveStrategy],
+          projection: vectorProjection,
           protocol: new OpenLayers.Protocol.WFS({
-                url: "${wfsUrl}", 
-                version: "1.1.0",
-                featureType: "${layerName?js_string}", 
-                featureNS: "${layerNS?js_string}", 
-                srsName: "EPSG:4326", //"EPSG:900913",
-                geometryName: ${geometryName},
-                maxFeatures: 250
-              })
+            url: "${wfsUrl}", 
+            version: "1.1.0",
+            featureType: "${layerName?js_string}", 
+            featureNS: "${layerNS?js_string}", 
+            srsName: (null != vectorProjection) ? vectorProjection.getCode() : null, 
+            geometryName: ${geometryName},
+            maxFeatures: 250
+          })
         });
         map.addLayers([baseLayer, vectorLayer]);
         loadData();
 
         // Loads features from the JSON to the vector layer
         function loadData() {
-          var reader = new OpenLayers.Format.GeoJSON();
+          var reader = new OpenLayers.Format.GeoJSON({
+            internalProjection: mapProjection,
+            externalProjection: vectorProjection
+          });
           var vecs = reader.read(featureJson);
           vectorLayer.addFeatures(vecs);
         }
@@ -130,7 +132,6 @@
           title: "Map",
           region: "center",
           height: 300,
-          //width: 600,
           map: map
         };
 
