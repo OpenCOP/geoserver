@@ -43,6 +43,11 @@
         map = new OpenLayers.Map({
           projection: mapProjection.getCode(),
           displayProjection: vectorProjection,
+//          units: "m",
+//          numZoomLevels: 19,
+//          maxResolution: 156543.0339,
+//          restrictedExtent: new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34),
+//          maxExtent: new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34),
           controls: [ new OpenLayers.Control.Navigation(),
             new OpenLayers.Control.Attribution(),
             new OpenLayers.Control.PanPanel(),
@@ -130,8 +135,11 @@
           ref: "map_panel",
           id: "map_panel",
           title: "Map",
-          region: "center",
-          height: 300,
+          region: "south",
+          height: document.body.clientHeight - 300,
+          split: true,
+          collapsible: true,
+          collapsed: null == vectorProjection,
           map: map
         };
 
@@ -207,7 +215,7 @@
             // Turn off the modifyButton
             modifyButton.toggle(false);
 
-            app.feature_table.getSelectionModel().each(function(rec) {
+            app.featureTable.getSelectionModel().each(function(rec) {
               var feature = rec.getFeature();
                           
               // There shouldn't be any features selected since the delete will
@@ -288,12 +296,12 @@
         };
 
         // Editor grid for the requested features
-        var feature_table = {
+        var featureTable = {
           xtype: "editorgrid",
-          ref: "feature_table",
+          ref: "featureTable",
           title: "${layerName?js_string}",
           iconCls: 'silk_table_find',
-          region: "north",
+          region: "center",
           height: 300,
           sm: selModel,
           store: new GeoExt.data.FeatureStore({
@@ -321,14 +329,14 @@
         // Main viewport for the whole app
         app = new Ext.Viewport({
           layout: "border",
-          items: [mapPanel, feature_table]
+          items: [mapPanel, featureTable]
         });
 
         // Saves the vector layer by commiting through WFS-T
         function saveVectorLayer() {
           // if feature has changed (and not by insert or delete), change its
           // state to reflect that
-          Ext.each(app.feature_table.store.getModifiedRecords(), function(record) {
+          Ext.each(app.featureTable.store.getModifiedRecords(), function(record) {
             var feature = record.getFeature();
             if (!feature.state) {
               feature.state = OpenLayers.State.UPDATE;
