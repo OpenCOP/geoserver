@@ -207,6 +207,22 @@
           handler: saveVectorLayer
         };
 
+        var csvButton = {
+          text: "Download CSV",
+          iconCls: "silk_arrow_down",
+          handler: function() {
+            window.open("${csvLink?js_string}");
+          }
+        }
+
+        var shapefileButton = {
+          text: "Download Shapefile",
+          iconCls: "silk_arrow_down",
+          handler: function() {
+            window.open("${shapefileLink?js_string}");
+          }
+        }
+
         /*** PANELS ***/
         // Editor grid for the requested features
         var featureTable = {
@@ -235,7 +251,9 @@
             deleteButton,
             modifyButton,
             undoButton,
-            saveButton 
+            saveButton,
+            csvButton,
+            shapefileButton
           ]
         }
 

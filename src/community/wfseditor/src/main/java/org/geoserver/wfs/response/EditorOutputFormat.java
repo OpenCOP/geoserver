@@ -1,6 +1,7 @@
 package org.geoserver.wfs.response;
 
 import static org.geoserver.ows.util.ResponseUtils.buildURL;
+import static org.geoserver.ows.util.ResponseUtils.params;
 
 import freemarker.ext.beans.BeansWrapper;
 import freemarker.template.Configuration;
@@ -13,6 +14,7 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import net.opengis.wfs.FeatureCollectionType;
 import net.opengis.wfs.GetFeatureType;
@@ -152,12 +154,14 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
     map.put("columnsJson", columnStringWriter.toString());
 
     // Get the wfs url
-    map.put("wfsUrl",
-            buildURL(
-            ((GetFeatureType) getFeature.getParameters()[0]).getBaseUrl(),
-            "wfs",
-            null,
-            URLType.SERVICE));
+    String baseUrl = ((GetFeatureType) getFeature.getParameters()[0]).getBaseUrl();
+    map.put("wfsUrl", buildURL(baseUrl, "wfs", null, URLType.SERVICE));
+
+    // Get the CSV download link
+    map.put("csvLink", getWFSLink(featureType, baseUrl, "csv"));
+    // Get the Shapefile download link
+    map.put("shapefileLink", getWFSLink(featureType, baseUrl, "SHAPE-ZIP"));
+
 
     try {
       template.process(map, new OutputStreamWriter(output, Charset.forName("UTF-8")));
@@ -266,6 +270,9 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
     return ExtTypes.valueOf(javaType).getExtType();
   }
 
+  /*
+   * Check if the attribute is the same one as the geometry attribute.
+   */
   private boolean isGeometryAttribute(GeometryDescriptor geometryDescriptor, 
           AttributeType attribute) {
     if (null != geometryDescriptor && null != geometryDescriptor.getType()) {
@@ -321,13 +328,27 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
     return null;
   }
 
+  /*
+   * Build a URL to different WFS outputFormats that a user might 
+   * want to download.
+   */
+  private String getWFSLink(SimpleFeatureType featureType, String baseUrl,
+          String outputFormat) {
+    Map kvp = params("service", "WFS", 
+                     "request", "GetFeature", 
+                     "typeName", featureType.getName().getLocalPart(), 
+                     "outputFormat", outputFormat);
+
+    return buildURL(baseUrl, "wfs", kvp, URLType.SERVICE);
+  }
+
   @Override
   public String getCapabilitiesElementName() {
     return "editor";
   }
 
   /*
-   * Provides a conversion from Java types to Ext types.
+   * Provide a conversion from Java types to Ext types.
    */
   private enum ExtTypes {
     Integer("int"),
