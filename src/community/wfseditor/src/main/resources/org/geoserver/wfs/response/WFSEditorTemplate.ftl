@@ -55,69 +55,69 @@
         loadDataFromJson();
 
         /*** CONTROLS ***/
-      // Either there is geometry and the user should be able to draw it
-      // when creating.
-      <#if geometryType?? >
-      function getDrawControl() {
-        var gt = "${(geometryType!"")?js_string}";
-        var handler = null;
-        if( gt.match(/Line/i) ) {
-          handler = "Path";
-        } else if( gt.match(/Polygon/i) ) {
-          handler = "Polygon";
-        } else if( gt.match(/Point/i) ) {
-          var handler = "Point";
-        }
-        if( null != handler ) {
-          return new OpenLayers.Control.DrawFeature(vectorLayer, 
-            OpenLayers.Handler[handler],
-            {
-              multi: (gt.match(/Multi/i)) ? true : false
-            });
-        } else {
-          return null;
-        }
-      }
-
-      var drawControl = getDrawControl();
-      drawControl.featureAdded = function(feature) {
-        selModel.unlock();
-        selModel.selectControl.select(feature);
-        createButton.toggle(false);
-      };
-      map.addControls([drawControl]);
-      
-        var createButton = new Ext.Button({
-        text: "Create Feature",
-        iconCls: "silk_table_add",
-        enableToggle: true,
-        toggleHandler: function(button, state) {
-          if( true === state ) {
-            modifyButton.toggle(false);
-            selModel.selectControl.unselectAll();
-            selModel.lock();
-            drawControl.activate();
+        // Either there is geometry and the user should be able to draw it
+        // when creating.
+        <#if geometryType?? >
+        function getDrawControl() {
+          var gt = "${(geometryType!"")?js_string}";
+          var handler = null;
+          if( gt.match(/Line/i) ) {
+            handler = "Path";
+          } else if( gt.match(/Polygon/i) ) {
+            handler = "Polygon";
+          } else if( gt.match(/Point/i) ) {
+            var handler = "Point";
+          }
+          if( null != handler ) {
+            return new OpenLayers.Control.DrawFeature(vectorLayer, 
+              OpenLayers.Handler[handler],
+              {
+                multi: (gt.match(/Multi/i)) ? true : false
+              });
           } else {
-            drawControl.deactivate();
-            selModel.unlock();
+            return null;
           }
         }
-      });
 
-      // Or the layer is aspatial and just add a feature to the grid.
-      <#else>
-        var createButton = {
-        text: "Create Feature",
-        iconCls: "silk_table_add",
-        handler: function() {
-//            selModel.selectControl.unselectAll();
-          var feature = new OpenLayers.Feature.Vector();
-          feature.state = OpenLayers.State.INSERT;
-          vectorLayer.addFeatures([feature]);
+        var drawControl = getDrawControl();
+        drawControl.featureAdded = function(feature) {
+          selModel.unlock();
           selModel.selectControl.select(feature);
-        }
-      };
-      </#if>
+          createButton.toggle(false);
+        };
+        map.addControls([drawControl]);
+        
+        var createButton = new Ext.Button({
+          text: "Create Feature",
+          iconCls: "silk_table_add",
+          enableToggle: true,
+          toggleHandler: function(button, state) {
+            if( true === state ) {
+              modifyButton.toggle(false);
+              selModel.selectControl.unselectAll();
+              selModel.lock();
+              drawControl.activate();
+            } else {
+              drawControl.deactivate();
+              selModel.unlock();
+            }
+          }
+        });
+
+        // Or the layer is aspatial and just add a feature to the grid.
+        <#else>
+        var createButton = {
+          text: "Create Feature",
+          iconCls: "silk_table_add",
+          handler: function() {
+  //            selModel.selectControl.unselectAll();
+            var feature = new OpenLayers.Feature.Vector();
+            feature.state = OpenLayers.State.INSERT;
+            vectorLayer.addFeatures([feature]);
+            selModel.selectControl.select(feature);
+          }
+        };
+        </#if>
 
         var deleteButton = new Ext.Button({
           text: "Delete Feature",
@@ -442,19 +442,6 @@
           new OpenLayers.Control.ZoomPanel(),
           new OpenLayers.Control.MousePosition() ]
       });
-    }
-
-    /*** CONTROLS ***/
-    /*
-     * Get an array of buttons to add to the toolbar.
-     */
-    function getButtons() {
-
-      return [getCreateButton()];
-    }
-
-    function getCreateButton() {
-
     }
     </script>    
   </head>
