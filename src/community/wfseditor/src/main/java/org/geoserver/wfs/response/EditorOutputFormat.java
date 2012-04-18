@@ -203,16 +203,16 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
   }
 
   /*
-   * Adds the attribute as an Ext Field to the JSON builder.
+   * Add the attribute as an Ext Field to the JSON builder.
    */
   private GeoJSONBuilder addAttributeToFieldsJson(GeoJSONBuilder builder, AttributeType attribute) {
     builder.object();
     builder.key("name").value(attribute.getName());
-    String type = getExtDataType(attribute.getBinding().getSimpleName());
-    builder.key("type").value(type);
+    ExtTypes extType = ExtTypes.valueOf(attribute.getBinding().getSimpleName());
+    builder.key("type").value(extType.getExtType());
 
     // Add a format for dates
-    if("date".equalsIgnoreCase(type)) {
+    if (ExtTypes.Timestamp.equals(extType)) {
       builder.key("dateFormat").value("Y-m-d H:i:s.u");
     }
 
@@ -223,7 +223,7 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
   /*
    * Adds the attribute as an Ext ColumnModel to the JSON builder.
    * 
-   * TODO: Needs to handle all types.
+   * TODO: Need to handle all types *correctly*.
    */
   private GeoJSONBuilder addAttributeToColumnsJson(GeoJSONBuilder builder, AttributeType attribute) {
     builder.object();
@@ -231,26 +231,16 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
     builder.key("header").value(attribute.getName());
     builder.key("sortable").value(true);
 
-    String type = getExtDataType(attribute.getBinding().getSimpleName());
-    String gridXtype = "numbercolumn";
-    String editorXtype = "numberfield";
+    ExtTypes extType = ExtTypes.valueOf(attribute.getBinding().getSimpleName());
+    String gridXtype = extType.getGridXType();
+    String editorXtype = extType.getEditorXType();
 
-    if ("date".equalsIgnoreCase(type)) {
-      gridXtype = "gridcolumn";
-      editorXtype = "xdatetime";
-      builder.key("width").value(160);
-    } else if ("string".equalsIgnoreCase(type)) {
-      gridXtype = "gridcolumn";
-      editorXtype = "textfield";
-    } else if ("boolean".equalsIgnoreCase(type)) {
-      gridXtype = "booleancolumn";
-      editorXtype = "checkbox";
-    }
-
-//    builder.key("xtype").value(gridXtype);
+    builder.key("width").value(160); // datetime picker fits nicely in this
+    builder.key("xtype").value(gridXtype);
     builder.key("editor").object().key("xtype").value(editorXtype);
 
-    if ("date".equalsIgnoreCase(type)) {
+    // Add special editor options for xdatetime/Timestamp/"date and time"
+    if (ExtTypes.Timestamp.equals(extType)) {
       builder.key("dtSeparator").value("T");
       builder.key("hiddenFormat").value("Y-m-d\\TH:i:s");
       builder.key("timeWidth").value(70);
@@ -264,10 +254,6 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
 
     builder.endObject();
     return builder;
-  }
-
-  private String getExtDataType(String javaType) {
-    return ExtTypes.valueOf(javaType).getExtType();
   }
 
   /*
@@ -351,23 +337,37 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
    * Provide a conversion from Java types to Ext types.
    */
   private enum ExtTypes {
-    Integer("int"),
-    Short("int"),
-    Long("int"),
-    String("string"),
-    Timestamp("date"),
-    Float("float"),
-    Double("float"),
-    Boolean("boolean");
+    Integer   ("int",     "numbercolumn",  "numberfield"),
+    Short     ("int",     "numbercolumn",  "numberfield"),
+    Long      ("int",     "numbercolumn",  "numberfield"),
+    Float     ("float",   "numbercolumn",  "numberfield"),
+    Double    ("float",   "numbercolumn",  "numberfield"),
+    Boolean   ("boolean", "booleancolumn", "checkbox"),
+    String    ("string",  "gridcolumn",    "textfield"),
+    Timestamp ("date",    "gridcolumn",    "xdatetime"),
+    Date      ("string",  "gridcolumn",    "textfield"),
+    Time      ("string",  "gridcolumn",    "textfield");
 
     private String extType;
+    private String gridXType;
+    private String editorXType;
 
-    private ExtTypes(String t) {
-      this.extType = t;
+    private ExtTypes(String extType, String gridXType, String editorXType) {
+      this.extType = extType;
+      this.gridXType = gridXType;
+      this.editorXType = editorXType;
     }
 
     public String getExtType() {
       return this.extType;
+    }
+
+    public String getGridXType() {
+      return this.gridXType;
+    }
+
+    public String getEditorXType() {
+      return this.editorXType;
     }
   }
 }
