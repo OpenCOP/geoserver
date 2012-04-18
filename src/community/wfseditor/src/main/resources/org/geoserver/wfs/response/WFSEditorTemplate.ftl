@@ -20,7 +20,7 @@
       var fieldsJson = ${fieldsJson};
       var columnsJson = ${columnsJson};
 
-      var map, mapPanel, app;
+      var map, app, mapProjection, vectorProjection, vectorLayer;
 
       Ext.onReady(function() {
         // Add a renderer to all date columns
@@ -30,182 +30,94 @@
           }
         });
 
-        var vectorProjection = null;
-        <#if geometryProjection??> // could be aspatial
-          vectorProjection = new OpenLayers.Projection("${(geometryProjection!"")?js_string}");
-        </#if>
-        var mapProjection = new OpenLayers.Projection("EPSG:900913");
+        /*** PROJECTIONS ***/
+        // Set the map and vector layer projections
+        setProjections();
         
-        // create map instance
-        // If you create a map without specifying controls, it creates 
-        // with default controls that use images that don't exist.
-        // So, I'm manually specifying them so they'll use the correct images.
-        map = new OpenLayers.Map({
-          projection: mapProjection.getCode(),
-          displayProjection: vectorProjection,
-//          units: "m",
-//          numZoomLevels: 19,
-//          maxResolution: 156543.0339,
-//          restrictedExtent: new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34),
-//          maxExtent: new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34),
-          controls: [ new OpenLayers.Control.Navigation(),
-            new OpenLayers.Control.Attribution(),
-            new OpenLayers.Control.PanPanel(),
-            new OpenLayers.Control.ZoomPanel(),
-            new OpenLayers.Control.MousePosition() ]
-        });
-        
+        /*** STRATEGY ***/
+        // Build the save strategy for the vector layer
+        var saveStrategy = new OpenLayers.Strategy.Save();
+        registerSaveStrategyEvents(saveStrategy);
+
+        /*** LAYERS ***/
         // Add a default base layer
         var baseLayer = new OpenLayers.Layer.OSM();
-
-        var saveStrategy = new OpenLayers.Strategy.Save();
-        // Alert the user that the WFS-T has succeeded
-        saveStrategy.events.register('success', null, function(evt){
-          var message = "<h3>Summary</h3><table>";
-          Ext.each(evt.response.priv.responseXML.childNodes[0].childNodes[0].childNodes, function(item){
-            message += "<tr><td>" + item.localName + ":</td><td>" + item.textContent + "</td></tr>";
-          });
-          message += "</table>The page will now reload to reflect your changes.";
-          Ext.MessageBox.show({
-            title: "WFS Transaction Success",
-            msg: message,
-            minWidth: 500,
-            buttons: Ext.MessageBox.OK,
-            fn: function(btn) {
-              window.location.reload();
-            },
-            icon: Ext.MessageBox.INFO
-          });
-        });
-
-        // Alert the user that the WFS-T has failed
-        saveStrategy.events.register('fail', null, function(evt){
-          var message = "";
-          Ext.each(evt.response.error.exceptionReport.exceptions, function(ex){
-            message += "<h3>" + ex.code + "</h3>";
-            var texts = ex.texts;
-            if( texts.length > 0 ) {
-              message += "<ul>";
-              Ext.each(texts, function(text){
-                message += "<li>" + text + "</li>";
-              });
-              message += "</ul>";
-            }
-          });
-          Ext.MessageBox.show({
-            title: "WFS Transaction Failure",
-            msg: message,
-            minWidth: 500,
-            buttons: Ext.MessageBox.OK,
-            icon: Ext.MessageBox.ERROR
-          });
-        });
-
-        // create vector layer for the requested features
-        var vectorLayer = new OpenLayers.Layer.Vector("${layerName?js_string}",
-        {
-          strategies:[saveStrategy],
-          projection: vectorProjection,
-          protocol: new OpenLayers.Protocol.WFS({
-            url: "${wfsUrl}", 
-            version: "1.1.0",
-            featureType: "${layerName?js_string}", 
-            featureNS: "${layerNS?js_string}", 
-            srsName: (null != vectorProjection) ? vectorProjection.getCode() : null, 
-            geometryName: ${geometryName},
-            maxFeatures: 250
-          })
-        });
-        map.addLayers([baseLayer, vectorLayer]);
-        loadData();
-
-        // Loads features from the JSON to the vector layer
-        function loadData() {
-          var reader = new OpenLayers.Format.GeoJSON({
-            internalProjection: mapProjection,
-            externalProjection: vectorProjection
-          });
-          var vecs = reader.read(featureJson);
-          vectorLayer.addFeatures(vecs);
-        }
-
-        // create map panel
-        mapPanel = { 
-          xtype: "gx_mappanel",
-          ref: "map_panel",
-          id: "map_panel",
-          title: "Map",
-          region: "south",
-          height: document.body.clientHeight - 300,
-          split: true,
-          collapsible: true,
-          collapsed: null == vectorProjection,
-          map: map
-        };
-
-        // Either there is geometry and the user should be able to draw it
-        // when creating.
-        // Or the layer is aspatial and just add a feature to the grid.
-        <#if geometryType?? >
-        function getDrawControl() {
-          var gt = "${(geometryType!"")?js_string}";
-          var handler = null;
-          if( gt.match(/Line/i) ) {
-            handler = "Path";
-          } else if( gt.match(/Polygon/i) ) {
-            handler = "Polygon";
-          } else if( gt.match(/Point/i) ) {
-            var handler = "Point";
-          }
-          if( null != handler ) {
-            return new OpenLayers.Control.DrawFeature(vectorLayer, 
-              OpenLayers.Handler[handler],
-              {
-                multi: (gt.match(/Multi/i)) ? true : false
-              });
-          } else {
-            return null;
-          }
-        }
-
-        var drawControl = getDrawControl();
-        drawControl.featureAdded = function(feature) {
-          selModel.unlock();
-          selModel.selectControl.select(feature);
-          createButton.toggle(false);
-        };
-        map.addControls([drawControl]);
         
-        var createButton = new Ext.Button({
-          text: "Create Feature",
-          iconCls: "silk_table_add",
-          enableToggle: true,
-          toggleHandler: function(button, state) {
-            if( true === state ) {
-              modifyButton.toggle(false);
-              selModel.selectControl.unselectAll();
-              selModel.lock();
-              drawControl.activate();
-            } else {
-              drawControl.deactivate();
-              selModel.unlock();
-            }
-          }
-        });
+        // create vector layer for the requested features
+        vectorLayer = buildVectorLayer(saveStrategy);
+        
+        /*** MAP ***/
+        // Build the map object
+        map = buildMap();
+        map.addLayers([baseLayer, vectorLayer]);
+        
+        // Load the features from the JSON into the vector layer
+        loadDataFromJson();
 
-        <#else>
-        var createButton = {
-          text: "Create Feature",
-          iconCls: "silk_table_add",
-          handler: function() {
-//            selModel.selectControl.unselectAll();
-            var feature = new OpenLayers.Feature.Vector();
-            feature.state = OpenLayers.State.INSERT;
-            vectorLayer.addFeatures([feature]);
-            selModel.selectControl.select(feature);
+        /*** CONTROLS ***/
+      // Either there is geometry and the user should be able to draw it
+      // when creating.
+      <#if geometryType?? >
+      function getDrawControl() {
+        var gt = "${(geometryType!"")?js_string}";
+        var handler = null;
+        if( gt.match(/Line/i) ) {
+          handler = "Path";
+        } else if( gt.match(/Polygon/i) ) {
+          handler = "Polygon";
+        } else if( gt.match(/Point/i) ) {
+          var handler = "Point";
+        }
+        if( null != handler ) {
+          return new OpenLayers.Control.DrawFeature(vectorLayer, 
+            OpenLayers.Handler[handler],
+            {
+              multi: (gt.match(/Multi/i)) ? true : false
+            });
+        } else {
+          return null;
+        }
+      }
+
+      var drawControl = getDrawControl();
+      drawControl.featureAdded = function(feature) {
+        selModel.unlock();
+        selModel.selectControl.select(feature);
+        createButton.toggle(false);
+      };
+      map.addControls([drawControl]);
+      
+        var createButton = new Ext.Button({
+        text: "Create Feature",
+        iconCls: "silk_table_add",
+        enableToggle: true,
+        toggleHandler: function(button, state) {
+          if( true === state ) {
+            modifyButton.toggle(false);
+            selModel.selectControl.unselectAll();
+            selModel.lock();
+            drawControl.activate();
+          } else {
+            drawControl.deactivate();
+            selModel.unlock();
           }
-        };
-        </#if>
+        }
+      });
+
+      // Or the layer is aspatial and just add a feature to the grid.
+      <#else>
+        var createButton = {
+        text: "Create Feature",
+        iconCls: "silk_table_add",
+        handler: function() {
+//            selModel.selectControl.unselectAll();
+          var feature = new OpenLayers.Feature.Vector();
+          feature.state = OpenLayers.State.INSERT;
+          vectorLayer.addFeatures([feature]);
+          selModel.selectControl.select(feature);
+        }
+      };
+      </#if>
 
         var deleteButton = new Ext.Button({
           text: "Delete Feature",
@@ -285,7 +197,7 @@
             selModel.selectControl.unselectAll();
             vectorLayer.removeAllFeatures();
             // Load the original data back into the vector layer
-            loadData();
+            loadDataFromJson();
           }
         };
 
@@ -295,6 +207,7 @@
           handler: saveVectorLayer
         };
 
+        /*** PANELS ***/
         // Editor grid for the requested features
         var featureTable = {
           xtype: "editorgrid",
@@ -326,10 +239,25 @@
           ]
         }
 
+        // create map panel
+        var mapPanel = { 
+          xtype: "gx_mappanel",
+          ref: "map_panel",
+          id: "map_panel",
+          title: "Map",
+          region: "south",
+          height: document.body.clientHeight - 300,
+          split: true,
+          collapsible: true,
+          collapsed: null == vectorProjection,
+          map: map
+        };
+
+        /*** VIEWPORT ***/
         // Main viewport for the whole app
         app = new Ext.Viewport({
           layout: "border",
-          items: [mapPanel, featureTable]
+          items: [featureTable, mapPanel]
         });
 
         // Saves the vector layer by commiting through WFS-T
@@ -401,11 +329,132 @@
 
     }); // end Ext.onReady()
 
-    // Objects with the same keys and values (excluding functions) are equal.
-    //   Example: {a: 1, :b: 2} == {a: 1, :b: 2} != {a: 1, b: 2, c: 3}.
-    function equalAttributes(objA, objB) {
-      // Yes, I feel bad about how hacky this is.  But it seems to work.
-      return Ext.encode(objA) === Ext.encode(objB)
+    /*** PROJECTIONS ***/
+    /*
+     * Creates the projection objects for the map and the vector layer.
+     */
+    function setProjections() {
+      mapProjection = new OpenLayers.Projection("EPSG:900913");
+      <#if geometryProjection??>
+        vectorProjection = new OpenLayers.Projection("${(geometryProjection!"")?js_string}");
+      <#else> // most likely aspatial
+        vectorProjection = null;
+      </#if>
+    }
+
+    /*** STRATEGY ***/
+    /*
+     * Builds and registers callback functions for the savestrategy's success
+     * and fail events.
+     */
+    function registerSaveStrategyEvents(saveStrategy) {
+      // Alert the user that the WFS-T has succeeded
+      saveStrategy.events.register('success', null, function(evt){
+        var message = "<h3>Summary</h3><table>";
+        Ext.each(evt.response.priv.responseXML.childNodes[0].childNodes[0].childNodes, function(item){
+          message += "<tr><td>" + item.localName + ":</td><td>" + item.textContent + "</td></tr>";
+        });
+        message += "</table>The page will now reload to reflect your changes.";
+        Ext.MessageBox.show({
+          title: "WFS Transaction Success",
+          msg: message,
+          minWidth: 500,
+          buttons: Ext.MessageBox.OK,
+          fn: function(btn) {
+            window.location.reload();
+          },
+          icon: Ext.MessageBox.INFO
+        });
+      });
+
+      // Alert the user that the WFS-T has failed
+      saveStrategy.events.register('fail', null, function(evt){
+        var message = "";
+        Ext.each(evt.response.error.exceptionReport.exceptions, function(ex){
+          message += "<h3>" + ex.code + "</h3>";
+          var texts = ex.texts;
+          if( texts.length > 0 ) {
+            message += "<ul>";
+            Ext.each(texts, function(text){
+              message += "<li>" + text + "</li>";
+            });
+            message += "</ul>";
+          }
+        });
+        Ext.MessageBox.show({
+          title: "WFS Transaction Failure",
+          msg: message,
+          minWidth: 500,
+          buttons: Ext.MessageBox.OK,
+          icon: Ext.MessageBox.ERROR
+        });
+      });
+    }
+
+    /*** LAYERS ***/
+    /*
+     * Builds the vector layer that contains the requested features.
+     */
+    function buildVectorLayer(saveStrategy) {
+      return new OpenLayers.Layer.Vector("${layerName?js_string}",
+        {
+          strategies:[saveStrategy],
+          projection: vectorProjection,
+          protocol: new OpenLayers.Protocol.WFS({
+            url: "${wfsUrl}", 
+            version: "1.1.0",
+            featureType: "${layerName?js_string}", 
+            featureNS: "${layerNS?js_string}", 
+            srsName: (null != vectorProjection) ? vectorProjection.getCode() : null, 
+            geometryName: ${geometryName},
+            maxFeatures: 250
+          })
+        });
+    }
+
+    /*
+     * Loads features from the JSON to the vector layer
+     */
+    function loadDataFromJson() {
+      var reader = new OpenLayers.Format.GeoJSON({
+        internalProjection: mapProjection,
+        externalProjection: vectorProjection
+      });
+      var vecs = reader.read(featureJson);
+      vectorLayer.addFeatures(vecs);
+    }
+
+    /*** MAP ***/
+    /*
+     * Builds the map object.
+     */
+    function buildMap() {
+      // create map instance
+      return new OpenLayers.Map({
+        projection: mapProjection.getCode(),
+        displayProjection: vectorProjection,
+        // If you create a map without specifying controls, it creates 
+        // with default controls that use images that don't exist.
+        // So, I'm manually specifying them so they'll use the correct images.
+        controls: [ new OpenLayers.Control.Navigation(),
+          new OpenLayers.Control.Attribution(),
+          new OpenLayers.Control.PanPanel(),
+          new OpenLayers.Control.ZoomPanel(),
+          new OpenLayers.Control.MousePosition() ]
+      });
+    }
+
+    /*** CONTROLS ***/
+    /*
+     * Get an array of buttons to add to the toolbar.
+     */
+    function getButtons() {
+
+      return [getCreateButton()];
+    }
+
+    function getCreateButton() {
+
     }
     </script>    
   </head>
