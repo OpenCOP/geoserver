@@ -113,9 +113,10 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
 //      featureType.getGeometryDescriptor().getName().getLocalPart()
 
     // Get the geometry column's name and type
-    map.put("geometryName", getGeometryColumnName(featureType));
-    map.put("geometryType", getGeometryColumnType(featureType));
-    map.put("geometryProjection", getGeometryColumnProjection(featureType));
+    GeometryDescriptor geometryDescriptor = featureType.getGeometryDescriptor();
+    map.put("geometryName", getGeometryColumnName(geometryDescriptor));
+    map.put("geometryType", getGeometryColumnType(geometryDescriptor));
+    map.put("geometryProjection", getGeometryColumnProjection(geometryDescriptor));
 
     // Get the features JSON
     map.put("featureJson", getFeaturesAsJson(featureCollection, getFeature));
@@ -131,8 +132,7 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
     columnJsonBuilder.array();
 
     for (AttributeType attribute : featureType.getTypes()) {
-      // TODO: change this check from the_geom to the binding class's name
-      if ("the_geom".equalsIgnoreCase(attribute.getName().toString())) {
+      if (isGeometryAttribute(geometryDescriptor, attribute)) {
         continue;
       }
 
@@ -266,25 +266,29 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
     return ExtTypes.valueOf(javaType).getExtType();
   }
 
-  private boolean isGeometryAttribute(AttributeType attribute) {
+  private boolean isGeometryAttribute(GeometryDescriptor geometryDescriptor, 
+          AttributeType attribute) {
+    if (null != geometryDescriptor && null != geometryDescriptor.getType()) {
+      return geometryDescriptor.getType().equals(attribute);
+    }
     return false;
   }
 
   /*
-   * returns String that is geometry column's name quoted or null
+   * returns String that is geometry column's name quoted or null quoted
    * Used by OpenLayers' WFS Protocol
    */
-  private String getGeometryColumnName(SimpleFeatureType featureType) {
-    if (null != featureType.getGeometryDescriptor()) {
-      return '"' + featureType.getGeometryDescriptor().getName().getLocalPart() + '"';
+  private String getGeometryColumnName(GeometryDescriptor geometryDescriptor) {
+    if (null != geometryDescriptor) {
+      return '"' + geometryDescriptor.getName().getLocalPart() + '"';
     } else {
       return "null";
     }
   }
   
-  private String getGeometryColumnType(SimpleFeatureType featureType) {
-    if (null != featureType.getGeometryDescriptor()) {
-      return featureType.getGeometryDescriptor().getType().getBinding().getSimpleName();
+  private String getGeometryColumnType(GeometryDescriptor geometryDescriptor) {
+    if (null != geometryDescriptor) {
+      return geometryDescriptor.getType().getBinding().getSimpleName();
     } else {
       return null;
     }
@@ -296,14 +300,12 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
    * @param featureType
    * @return 
    */
-  private String getGeometryColumnProjection(SimpleFeatureType featureType) {
+  private String getGeometryColumnProjection(GeometryDescriptor geometryDescriptor) {
     // This implementation is based off of GeoJSONOutputFormat.
     // For some reason crs.getName() is different than the first crs.getIdentifiers()
     // even though they return the same class and there is only one in crs.getIdentifiers()
-    GeometryDescriptor gd = featureType.getGeometryDescriptor();
-  
-    if (null != gd) {               
-      CoordinateReferenceSystem crs = gd.getCoordinateReferenceSystem();
+    if (null != geometryDescriptor) {               
+      CoordinateReferenceSystem crs = geometryDescriptor.getCoordinateReferenceSystem();
     
       if (null != crs) {
         Set<ReferenceIdentifier> ids = crs.getIdentifiers();
