@@ -13,9 +13,7 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import net.opengis.wfs.FeatureCollectionType;
 import net.opengis.wfs.GetFeatureType;
 import org.geoserver.config.GeoServer;
@@ -49,7 +47,6 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
     cfg.setObjectWrapper(bw);
   }
   private GeoJSONOutputFormat jsonFormatter;
-  private Map<String, String> typeConversion;
 
   public EditorOutputFormat(GeoServer gs) {
     //this is the name of your output format, it is the string
@@ -57,17 +54,6 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
     // GEtFeature request: 
     // ie ;.../geoserver/wfs?request=getfeature&outputFormat=myOutputFormat
     super(gs, "editor");
-
-    // Map to convert Java types to Ext types
-    typeConversion = new TreeMap<String, String>();
-    typeConversion.put("Integer", "int");
-    typeConversion.put("Short", "int");
-    typeConversion.put("Long", "int");
-    typeConversion.put("String", "string");
-    typeConversion.put("Timestamp", "date");
-    typeConversion.put("Float", "float");
-    typeConversion.put("Double", "float");
-    typeConversion.put("Boolean", "boolean");
   }
 
   public EditorOutputFormat(GeoServer gs, GeoJSONOutputFormat json) {
@@ -81,8 +67,6 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
   @Override
   public String getMimeType(Object value, Operation operation)
           throws ServiceException {
-    // won't allow browsers to open it directly, but that's the mime
-    // state in the RFC
     return "text/html";
   }
 
@@ -279,7 +263,7 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
   }
 
   private String getExtDataType(String javaType) {
-    return typeConversion.get(javaType);
+    return ExtTypes.valueOf(javaType).getExtType();
   }
 
   private boolean isGeometryAttribute(AttributeType attribute) {
@@ -338,5 +322,29 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
   @Override
   public String getCapabilitiesElementName() {
     return "editor";
+  }
+
+  /*
+   * Provides a conversion from Java types to Ext types.
+   */
+  private enum ExtTypes {
+    Integer("int"),
+    Short("int"),
+    Long("int"),
+    String("string"),
+    Timestamp("date"),
+    Float("float"),
+    Double("float"),
+    Boolean("boolean");
+
+    private String extType;
+
+    private ExtTypes(String t) {
+      this.extType = t;
+    }
+
+    public String getExtType() {
+      return this.extType;
+    }
   }
 }
