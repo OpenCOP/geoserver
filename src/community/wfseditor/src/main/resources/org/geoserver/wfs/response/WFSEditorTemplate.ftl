@@ -369,8 +369,12 @@
       // Alert the user that the WFS-T has succeeded
       saveStrategy.events.register('success', null, function(evt){
         var message = "<h3>Summary</h3><table>";
-        Ext.each(evt.response.priv.responseXML.childNodes[0].childNodes[0].childNodes, function(item){
-          message += "<tr><td>" + item.localName + ":</td><td>" + item.textContent + "</td></tr>";
+        Ext.each(evt.response.priv.responseXML.documentElement.firstChild.childNodes, function(item){
+          message += "<tr><td>" + 
+            ((null != item.localName) ? item.localName : item.baseName) + 
+            ":</td><td>" + 
+            ((null != item.textContent) ? item.textContent : item.text) + 
+            "</td></tr>";
         });
         message += "</table>The page will now reload to reflect your changes.";
         Ext.MessageBox.show({
@@ -388,17 +392,22 @@
       // Alert the user that the WFS-T has failed
       saveStrategy.events.register('fail', null, function(evt){
         var message = "";
-        Ext.each(evt.response.error.exceptionReport.exceptions, function(ex){
-          message += "<h3>" + ex.code + "</h3>";
-          var texts = ex.texts;
-          if( texts.length > 0 ) {
-            message += "<ul>";
-            Ext.each(texts, function(text){
-              message += "<li>" + text + "</li>";
-            });
-            message += "</ul>";
-          }
-        });
+        if( null != evt.response.error.exceptionReport ) {
+          Ext.each(evt.response.error.exceptionReport.exceptions, function(ex){
+            message += "<h3>" + ex.code + "</h3>";
+            var texts = ex.texts;
+            if( texts.length > 0 ) {
+              message += "<ul>";
+              Ext.each(texts, function(text){
+                message += "<li>" + text.substring(0, 250) + "</li>";
+              });
+              message += "</ul>";
+            }
+          });
+        } else {
+          message = evt.response.priv.responseText;
+        }
+        
         Ext.MessageBox.show({
           title: "WFS Transaction Failure",
           msg: message,
