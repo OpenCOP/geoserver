@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -54,6 +56,10 @@ public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCo
      * formatted
      */
     private AbstractFileInspector fileInsp = new FileInspector();
+
+    String timeAttribute;
+
+    String elevationAttribute;
 
     public NetCDFReader(File netcdfRootDirectory, Hints hints) {
         rootDir = netcdfRootDirectory;
@@ -163,9 +169,12 @@ public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCo
             }
 
             if (name.equals("ELEVATION")) {
-                if (param.getValue() != null && ((Double) param.getValue()) != 0.0) {
-                    elevation = (Double) param.getValue();
-                }
+//                if (param.getValue() != null && ((Double) param.getValue()) != 0.0) {
+//                    elevation = (Double) param.getValue();
+//                }
+              final Object value = param.getValue();
+              if(value!=null)
+                elevation = (Double)((List<?>) value).get(0);
             }
 
             if (name.equals(NetCDFFormat.PARAMETER.getName().toString())) {
@@ -262,5 +271,73 @@ public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCo
         CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
         ReferencedEnvelope refEnv = new ReferencedEnvelope(minx, maxx, miny, maxy, crs);
         return refEnv;
+    }
+
+    // These two methods provide the support for Time and Elevation.
+    // Check out ImageMosaicReader from GeoTools-8 imagemosaic datasource module
+    // for more inspiration.
+    @Override
+    public String[] getMetadataNames() {
+        final String []parentNames = super.getMetadataNames();
+        final List<String> metadataNames = new ArrayList<String>();
+        metadataNames.add(TIME_DOMAIN);
+        metadataNames.add(HAS_TIME_DOMAIN);
+        metadataNames.add(TIME_DOMAIN_MINIMUM);
+        metadataNames.add(TIME_DOMAIN_MAXIMUM);
+        metadataNames.add(TIME_DOMAIN_RESOLUTION);
+        metadataNames.add(ELEVATION_DOMAIN);
+        metadataNames.add(ELEVATION_DOMAIN_MINIMUM);
+        metadataNames.add(ELEVATION_DOMAIN_MAXIMUM);
+        metadataNames.add(HAS_ELEVATION_DOMAIN);
+        metadataNames.add(ELEVATION_DOMAIN_RESOLUTION);
+        if(parentNames!=null)
+            metadataNames.addAll(Arrays.asList(parentNames));
+        return metadataNames.toArray(new String[metadataNames.size()]);
+    }
+
+    @Override
+    public String getMetadataValue(final String name) {
+        final String superValue=super.getMetadataValue(name);
+        if(superValue!=null)
+            return superValue;
+        
+        if (name.equalsIgnoreCase(HAS_ELEVATION_DOMAIN))
+//                return String.valueOf(elevationAttribute != null);
+            return String.valueOf(true);
+      
+        if (name.equalsIgnoreCase(HAS_TIME_DOMAIN))
+            return String.valueOf(timeAttribute != null);
+//              return String.valueOf(true);
+
+//            if (name.equalsIgnoreCase(TIME_DOMAIN_RESOLUTION))
+//                return null;
+//    
+//            final boolean getTimeDomain = (timeAttribute != null && name.equalsIgnoreCase("time_domain"));
+//            if (getTimeDomain) {
+//                return extractTimeDomain();
+//    
+//            }
+//    
+//            final boolean getTimeExtrema = timeAttribute != null
+//                    && (name.equalsIgnoreCase("time_domain_minimum") || name.equalsIgnoreCase("time_domain_maximum"));
+//            if (getTimeExtrema) {
+//                return extractTimeExtrema(name);
+//    
+//            }
+//    
+        final boolean getElevationAttribute = (/*elevationAttribute != null &&*/ name.equalsIgnoreCase("elevation_domain"));
+        if (getElevationAttribute) {
+            return "0,-1000,-2000";
+//                return extractElevationDomain();
+        }
+        
+//    
+//            final boolean getElevationExtrema = elevationAttribute != null
+//                    && (name.equalsIgnoreCase("elevation_domain_minimum") || name.equalsIgnoreCase("elevation_domain_maximum"));
+//            if (getElevationExtrema) {
+//                return extractElevationExtrema(name);
+//    
+//            }
+        return superValue;
     }
 }
