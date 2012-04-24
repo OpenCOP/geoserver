@@ -33,6 +33,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * WFS output format for a GetFeature operation in which the outputFormat is "editor".
+ * 
+ * @author Yancy Matherne, Geocent, yancy.matherne@geocent.com
  */
 public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
 
@@ -70,6 +72,11 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
   public String getMimeType(Object value, Operation operation)
           throws ServiceException {
     return "text/html";
+  }
+
+  @Override
+  public String getCapabilitiesElementName() {
+    return "editor";
   }
 
 //  @Override
@@ -326,11 +333,6 @@ public class EditorOutputFormat extends WFSGetFeatureOutputFormat {
                      "outputFormat", outputFormat);
 
     return buildURL(baseUrl, "wfs", kvp, URLType.SERVICE);
-  }
-
-  @Override
-  public String getCapabilitiesElementName() {
-    return "editor";
   }
 
   /*
