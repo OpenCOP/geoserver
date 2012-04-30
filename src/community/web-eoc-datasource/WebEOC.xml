@@ -1,0 +1,1615 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="urn:com:esi911:webeoc7:api:1.0" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="urn:com:esi911:webeoc7:api:1.0" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="urn:com:esi911:webeoc7:api:1.0">
+      <s:element name="AddAttachment">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="BoardName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="InputViewName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="AttachmentFieldName" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="DataId" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="AttachmentFileData" type="s:base64Binary" />
+            <s:element minOccurs="0" maxOccurs="1" name="AttachmentFileName" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="WebEOCCredentials">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Username" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Password" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Position" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Jurisdiction" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Incident" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="AddAttachmentResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="GetPositions">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPositionsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetPositionsResult" type="tns:ArrayOfString" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfString">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="GetUsersByPosition">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="PositionName" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetUsersByPositionResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetUsersByPositionResult" type="tns:ArrayOfWebEOCUser" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfWebEOCUser">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="WebEOCUser" nillable="true" type="tns:WebEOCUser" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="WebEOCUser">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Username" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="IsAdministrator" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="IsMultipleUserLogin" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="IsAccountDisabled" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="ChangePasswordAtNextLogin" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="IsDualCommitUser" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="PrimaryEmail" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Color" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="GetPositionsForUser">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPositionsForUserResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetPositionsForUserResult" type="tns:ArrayOfString" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddUser">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="UserToAdd" type="tns:WebEOCUser" />
+            <s:element minOccurs="0" maxOccurs="1" name="Password" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddUserResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="AddUserToPosition">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Position" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddUserToPositionResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="RemoveUserFromPosition">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Position" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="RemoveUserFromPositionResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="DeleteUserIfNoPositions">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="DeleteUserIfNoPositionsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="DeleteUserIfNoPositionsResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="DeleteUser">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="DeleteUserResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="GetBoardNames">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetBoardNamesResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetBoardNamesResult" type="tns:ArrayOfString" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetInputViews">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="BoardName" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetInputViewsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetInputViewsResult" type="tns:ArrayOfString" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetDisplayViews">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="BoardName" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetDisplayViewsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetDisplayViewsResult" type="tns:ArrayOfString" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetViewFields">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="BoardName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ViewName" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetViewFieldsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetViewFieldsResult" type="tns:ArrayOfString" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddData">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="BoardName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="InputViewName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="XmlData" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddDataResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="AddDataResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UpdateData">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="BoardName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="InputViewName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="XmlData" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="DataId" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UpdateDataResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="UpdateDataResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UpdateDataBatch">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="BoardName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="InputViewName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="XmlData" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UpdateDataBatchResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UpdateDataBatchResult" type="tns:ArrayOfInt" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfInt">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="int" type="s:int" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="AddRelatedData">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="BoardName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="InputViewName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="XmlData" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="RelatedTable" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="RelatedDataId" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddRelatedDataResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="AddRelatedDataResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UpdateRelatedData">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="BoardName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="InputViewName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="XmlData" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="RelatedTable" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="RelatedDataId" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="DataId" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UpdateRelatedDataResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="UpdateRelatedDataResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetData">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="BoardName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DisplayViewName" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetDataResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetDataResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetFilteredData">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="BoardName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DisplayViewName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ViewFilterNames" type="tns:ArrayOfString" />
+            <s:element minOccurs="0" maxOccurs="1" name="XmlUserFilter" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetFilteredDataResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetFilteredDataResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetFilteredDataV2">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="BoardName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DisplayViewName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ViewFilterNames" type="tns:ArrayOfString" />
+            <s:element minOccurs="0" maxOccurs="1" name="XmlUserFilter" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="CustomFilter" type="tns:CustomFilter" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="CustomFilter">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="CustomFilterItems" type="tns:ArrayOfCustomFilterItem" />
+          <s:element minOccurs="1" maxOccurs="1" name="CustomFilterBoolean" type="tns:CustomFilterBoolean" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfCustomFilterItem">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="CustomFilterItem" nillable="true" type="tns:CustomFilterItem" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="CustomFilterItem">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="FieldName" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="Operator" type="tns:CustomFilterOperator" />
+          <s:element minOccurs="0" maxOccurs="1" name="FieldValue" />
+        </s:sequence>
+      </s:complexType>
+      <s:simpleType name="CustomFilterOperator">
+        <s:restriction base="s:string">
+          <s:enumeration value="Equal" />
+          <s:enumeration value="LessThan" />
+          <s:enumeration value="GreaterThan" />
+          <s:enumeration value="LessThanOrEqual" />
+          <s:enumeration value="GreaterThanOrEqual" />
+          <s:enumeration value="Like" />
+        </s:restriction>
+      </s:simpleType>
+      <s:simpleType name="CustomFilterBoolean">
+        <s:restriction base="s:string">
+          <s:enumeration value="And" />
+          <s:enumeration value="Or" />
+        </s:restriction>
+      </s:simpleType>
+      <s:element name="GetFilteredDataV2Response">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetFilteredDataV2Result" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetUpdatedData">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="BoardName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DisplayViewName" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="UpdatedTime" type="s:dateTime" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetUpdatedDataResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetUpdatedDataResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetDataByDataId">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="BoardName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DisplayViewName" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="DataId" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetDataByDataIdResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetDataByDataIdResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Ping">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="PingResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="PingResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="PostStandardData">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="XmlStandardData" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="PostStandardDataResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="GetIncidents">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetIncidentsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetIncidentsResult" type="tns:ArrayOfString" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddIncident">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="IncidentName" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="IncidentDateTime" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="Default" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddIncidentResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="GetLists">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetListsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetListsResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:any minOccurs="1" namespace="urn:schemas-microsoft-com:xml-diffgram-v1" processContents="lax" />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetListItems">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="1" maxOccurs="1" name="listId" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetListItemsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetListItemsResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:any minOccurs="1" namespace="urn:schemas-microsoft-com:xml-diffgram-v1" processContents="lax" />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetListItemsByListName">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="0" maxOccurs="1" name="listName" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetListItemsByListNameResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetListItemsByListNameResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:any minOccurs="1" namespace="urn:schemas-microsoft-com:xml-diffgram-v1" processContents="lax" />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SaveList">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="1" maxOccurs="1" name="listId" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="listName" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SaveListResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="SaveListResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="DeleteList">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="1" maxOccurs="1" name="listId" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="DeleteListResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="SaveListItem">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="1" maxOccurs="1" name="listId" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="listItemId" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="listItemName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="listItemColor" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SaveListItemResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="SaveListItemResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="DeleteListItem">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:WebEOCCredentials" />
+            <s:element minOccurs="1" maxOccurs="1" name="listItemId" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="DeleteListItemResponse">
+        <s:complexType />
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="AddAttachmentSoapIn">
+    <wsdl:part name="parameters" element="tns:AddAttachment" />
+  </wsdl:message>
+  <wsdl:message name="AddAttachmentSoapOut">
+    <wsdl:part name="parameters" element="tns:AddAttachmentResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetPositionsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetPositions" />
+  </wsdl:message>
+  <wsdl:message name="GetPositionsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetPositionsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetUsersByPositionSoapIn">
+    <wsdl:part name="parameters" element="tns:GetUsersByPosition" />
+  </wsdl:message>
+  <wsdl:message name="GetUsersByPositionSoapOut">
+    <wsdl:part name="parameters" element="tns:GetUsersByPositionResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetPositionsForUserSoapIn">
+    <wsdl:part name="parameters" element="tns:GetPositionsForUser" />
+  </wsdl:message>
+  <wsdl:message name="GetPositionsForUserSoapOut">
+    <wsdl:part name="parameters" element="tns:GetPositionsForUserResponse" />
+  </wsdl:message>
+  <wsdl:message name="AddUserSoapIn">
+    <wsdl:part name="parameters" element="tns:AddUser" />
+  </wsdl:message>
+  <wsdl:message name="AddUserSoapOut">
+    <wsdl:part name="parameters" element="tns:AddUserResponse" />
+  </wsdl:message>
+  <wsdl:message name="AddUserToPositionSoapIn">
+    <wsdl:part name="parameters" element="tns:AddUserToPosition" />
+  </wsdl:message>
+  <wsdl:message name="AddUserToPositionSoapOut">
+    <wsdl:part name="parameters" element="tns:AddUserToPositionResponse" />
+  </wsdl:message>
+  <wsdl:message name="RemoveUserFromPositionSoapIn">
+    <wsdl:part name="parameters" element="tns:RemoveUserFromPosition" />
+  </wsdl:message>
+  <wsdl:message name="RemoveUserFromPositionSoapOut">
+    <wsdl:part name="parameters" element="tns:RemoveUserFromPositionResponse" />
+  </wsdl:message>
+  <wsdl:message name="DeleteUserIfNoPositionsSoapIn">
+    <wsdl:part name="parameters" element="tns:DeleteUserIfNoPositions" />
+  </wsdl:message>
+  <wsdl:message name="DeleteUserIfNoPositionsSoapOut">
+    <wsdl:part name="parameters" element="tns:DeleteUserIfNoPositionsResponse" />
+  </wsdl:message>
+  <wsdl:message name="DeleteUserSoapIn">
+    <wsdl:part name="parameters" element="tns:DeleteUser" />
+  </wsdl:message>
+  <wsdl:message name="DeleteUserSoapOut">
+    <wsdl:part name="parameters" element="tns:DeleteUserResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetBoardNamesSoapIn">
+    <wsdl:part name="parameters" element="tns:GetBoardNames" />
+  </wsdl:message>
+  <wsdl:message name="GetBoardNamesSoapOut">
+    <wsdl:part name="parameters" element="tns:GetBoardNamesResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetInputViewsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetInputViews" />
+  </wsdl:message>
+  <wsdl:message name="GetInputViewsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetInputViewsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetDisplayViewsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetDisplayViews" />
+  </wsdl:message>
+  <wsdl:message name="GetDisplayViewsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetDisplayViewsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetViewFieldsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetViewFields" />
+  </wsdl:message>
+  <wsdl:message name="GetViewFieldsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetViewFieldsResponse" />
+  </wsdl:message>
+  <wsdl:message name="AddDataSoapIn">
+    <wsdl:part name="parameters" element="tns:AddData" />
+  </wsdl:message>
+  <wsdl:message name="AddDataSoapOut">
+    <wsdl:part name="parameters" element="tns:AddDataResponse" />
+  </wsdl:message>
+  <wsdl:message name="UpdateDataSoapIn">
+    <wsdl:part name="parameters" element="tns:UpdateData" />
+  </wsdl:message>
+  <wsdl:message name="UpdateDataSoapOut">
+    <wsdl:part name="parameters" element="tns:UpdateDataResponse" />
+  </wsdl:message>
+  <wsdl:message name="UpdateDataBatchSoapIn">
+    <wsdl:part name="parameters" element="tns:UpdateDataBatch" />
+  </wsdl:message>
+  <wsdl:message name="UpdateDataBatchSoapOut">
+    <wsdl:part name="parameters" element="tns:UpdateDataBatchResponse" />
+  </wsdl:message>
+  <wsdl:message name="AddRelatedDataSoapIn">
+    <wsdl:part name="parameters" element="tns:AddRelatedData" />
+  </wsdl:message>
+  <wsdl:message name="AddRelatedDataSoapOut">
+    <wsdl:part name="parameters" element="tns:AddRelatedDataResponse" />
+  </wsdl:message>
+  <wsdl:message name="UpdateRelatedDataSoapIn">
+    <wsdl:part name="parameters" element="tns:UpdateRelatedData" />
+  </wsdl:message>
+  <wsdl:message name="UpdateRelatedDataSoapOut">
+    <wsdl:part name="parameters" element="tns:UpdateRelatedDataResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetDataSoapIn">
+    <wsdl:part name="parameters" element="tns:GetData" />
+  </wsdl:message>
+  <wsdl:message name="GetDataSoapOut">
+    <wsdl:part name="parameters" element="tns:GetDataResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetFilteredDataSoapIn">
+    <wsdl:part name="parameters" element="tns:GetFilteredData" />
+  </wsdl:message>
+  <wsdl:message name="GetFilteredDataSoapOut">
+    <wsdl:part name="parameters" element="tns:GetFilteredDataResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetFilteredDataV2SoapIn">
+    <wsdl:part name="parameters" element="tns:GetFilteredDataV2" />
+  </wsdl:message>
+  <wsdl:message name="GetFilteredDataV2SoapOut">
+    <wsdl:part name="parameters" element="tns:GetFilteredDataV2Response" />
+  </wsdl:message>
+  <wsdl:message name="GetUpdatedDataSoapIn">
+    <wsdl:part name="parameters" element="tns:GetUpdatedData" />
+  </wsdl:message>
+  <wsdl:message name="GetUpdatedDataSoapOut">
+    <wsdl:part name="parameters" element="tns:GetUpdatedDataResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetDataByDataIdSoapIn">
+    <wsdl:part name="parameters" element="tns:GetDataByDataId" />
+  </wsdl:message>
+  <wsdl:message name="GetDataByDataIdSoapOut">
+    <wsdl:part name="parameters" element="tns:GetDataByDataIdResponse" />
+  </wsdl:message>
+  <wsdl:message name="PingSoapIn">
+    <wsdl:part name="parameters" element="tns:Ping" />
+  </wsdl:message>
+  <wsdl:message name="PingSoapOut">
+    <wsdl:part name="parameters" element="tns:PingResponse" />
+  </wsdl:message>
+  <wsdl:message name="PostStandardDataSoapIn">
+    <wsdl:part name="parameters" element="tns:PostStandardData" />
+  </wsdl:message>
+  <wsdl:message name="PostStandardDataSoapOut">
+    <wsdl:part name="parameters" element="tns:PostStandardDataResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetIncidentsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetIncidents" />
+  </wsdl:message>
+  <wsdl:message name="GetIncidentsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetIncidentsResponse" />
+  </wsdl:message>
+  <wsdl:message name="AddIncidentSoapIn">
+    <wsdl:part name="parameters" element="tns:AddIncident" />
+  </wsdl:message>
+  <wsdl:message name="AddIncidentSoapOut">
+    <wsdl:part name="parameters" element="tns:AddIncidentResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetListsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetLists" />
+  </wsdl:message>
+  <wsdl:message name="GetListsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetListsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetListItemsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetListItems" />
+  </wsdl:message>
+  <wsdl:message name="GetListItemsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetListItemsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetListItemsByListNameSoapIn">
+    <wsdl:part name="parameters" element="tns:GetListItemsByListName" />
+  </wsdl:message>
+  <wsdl:message name="GetListItemsByListNameSoapOut">
+    <wsdl:part name="parameters" element="tns:GetListItemsByListNameResponse" />
+  </wsdl:message>
+  <wsdl:message name="SaveListSoapIn">
+    <wsdl:part name="parameters" element="tns:SaveList" />
+  </wsdl:message>
+  <wsdl:message name="SaveListSoapOut">
+    <wsdl:part name="parameters" element="tns:SaveListResponse" />
+  </wsdl:message>
+  <wsdl:message name="DeleteListSoapIn">
+    <wsdl:part name="parameters" element="tns:DeleteList" />
+  </wsdl:message>
+  <wsdl:message name="DeleteListSoapOut">
+    <wsdl:part name="parameters" element="tns:DeleteListResponse" />
+  </wsdl:message>
+  <wsdl:message name="SaveListItemSoapIn">
+    <wsdl:part name="parameters" element="tns:SaveListItem" />
+  </wsdl:message>
+  <wsdl:message name="SaveListItemSoapOut">
+    <wsdl:part name="parameters" element="tns:SaveListItemResponse" />
+  </wsdl:message>
+  <wsdl:message name="DeleteListItemSoapIn">
+    <wsdl:part name="parameters" element="tns:DeleteListItem" />
+  </wsdl:message>
+  <wsdl:message name="DeleteListItemSoapOut">
+    <wsdl:part name="parameters" element="tns:DeleteListItemResponse" />
+  </wsdl:message>
+  <wsdl:portType name="APISoap">
+    <wsdl:operation name="AddAttachment">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Attach a file to a WebEOC board entry.</wsdl:documentation>
+      <wsdl:input message="tns:AddAttachmentSoapIn" />
+      <wsdl:output message="tns:AddAttachmentSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPositions">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get a list of the WebEOC positions. Administrator access required</wsdl:documentation>
+      <wsdl:input message="tns:GetPositionsSoapIn" />
+      <wsdl:output message="tns:GetPositionsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetUsersByPosition">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get a list of the WebEOC users that belong to specific position. Administrator access required. Raises an exception if the positions does not exist.</wsdl:documentation>
+      <wsdl:input message="tns:GetUsersByPositionSoapIn" />
+      <wsdl:output message="tns:GetUsersByPositionSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPositionsForUser">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get the list of positions that a user can fill. Administrator access required.</wsdl:documentation>
+      <wsdl:input message="tns:GetPositionsForUserSoapIn" />
+      <wsdl:output message="tns:GetPositionsForUserSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddUser">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Add a user to the database. Administrator access required. An exception will be raised if a user already exists with the same username.  If a color value is supplied, an exception will be raised if the value is not a valid color string(6 digit hexadecimal string)</wsdl:documentation>
+      <wsdl:input message="tns:AddUserSoapIn" />
+      <wsdl:output message="tns:AddUserSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddUserToPosition">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Add a user to a position assignment. Administrator access required. An exception will be raised if the user or position does not exist</wsdl:documentation>
+      <wsdl:input message="tns:AddUserToPositionSoapIn" />
+      <wsdl:output message="tns:AddUserToPositionSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="RemoveUserFromPosition">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Remove a user from a position assignment.  Administrator access required. An exception will be raised if the user or position does not exist</wsdl:documentation>
+      <wsdl:input message="tns:RemoveUserFromPositionSoapIn" />
+      <wsdl:output message="tns:RemoveUserFromPositionSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="DeleteUserIfNoPositions">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Delete a user from WebEOC. Administrator access required. An exception will be raised if the user does not exist or if the user is the same user supplied in the credentials.  Returns false if the user was unable to be deleted due to position member.  Returns true if the user was deleted</wsdl:documentation>
+      <wsdl:input message="tns:DeleteUserIfNoPositionsSoapIn" />
+      <wsdl:output message="tns:DeleteUserIfNoPositionsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="DeleteUser">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Delete a user from WebEOC. Administrator access required. An exception will be raised if the user does not exist or if the user is the same user supplied in the credentials or if the user is not deleteable (WebEOC Administrator)</wsdl:documentation>
+      <wsdl:input message="tns:DeleteUserSoapIn" />
+      <wsdl:output message="tns:DeleteUserSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetBoardNames">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get a list of the WebEOC boards. Administrator access required</wsdl:documentation>
+      <wsdl:input message="tns:GetBoardNamesSoapIn" />
+      <wsdl:output message="tns:GetBoardNamesSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetInputViews">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get the list of Input views for a specific board. Administrator access required</wsdl:documentation>
+      <wsdl:input message="tns:GetInputViewsSoapIn" />
+      <wsdl:output message="tns:GetInputViewsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDisplayViews">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get the list of Display views for a specific board. Administrator access required</wsdl:documentation>
+      <wsdl:input message="tns:GetDisplayViewsSoapIn" />
+      <wsdl:output message="tns:GetDisplayViewsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetViewFields">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get the list of fields for a particular view. Administrator access required.</wsdl:documentation>
+      <wsdl:input message="tns:GetViewFieldsSoapIn" />
+      <wsdl:output message="tns:GetViewFieldsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddData">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Add a new entry to a WebEOC board.</wsdl:documentation>
+      <wsdl:input message="tns:AddDataSoapIn" />
+      <wsdl:output message="tns:AddDataSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="UpdateData">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Update an existing entry in a WebEOC board.</wsdl:documentation>
+      <wsdl:input message="tns:UpdateDataSoapIn" />
+      <wsdl:output message="tns:UpdateDataSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="UpdateDataBatch">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Batch method for adding/updating entires in a WebEOC board.</wsdl:documentation>
+      <wsdl:input message="tns:UpdateDataBatchSoapIn" />
+      <wsdl:output message="tns:UpdateDataBatchSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddRelatedData">
+      <wsdl:input message="tns:AddRelatedDataSoapIn" />
+      <wsdl:output message="tns:AddRelatedDataSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="UpdateRelatedData">
+      <wsdl:input message="tns:UpdateRelatedDataSoapIn" />
+      <wsdl:output message="tns:UpdateRelatedDataSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetData">
+      <wsdl:input message="tns:GetDataSoapIn" />
+      <wsdl:output message="tns:GetDataSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetFilteredData">
+      <wsdl:input message="tns:GetFilteredDataSoapIn" />
+      <wsdl:output message="tns:GetFilteredDataSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetFilteredDataV2">
+      <wsdl:input message="tns:GetFilteredDataV2SoapIn" />
+      <wsdl:output message="tns:GetFilteredDataV2SoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetUpdatedData">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get the board entries that have been added or updated since UpdatedTime</wsdl:documentation>
+      <wsdl:input message="tns:GetUpdatedDataSoapIn" />
+      <wsdl:output message="tns:GetUpdatedDataSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDataByDataId">
+      <wsdl:input message="tns:GetDataByDataIdSoapIn" />
+      <wsdl:output message="tns:GetDataByDataIdSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Ping">
+      <wsdl:input message="tns:PingSoapIn" />
+      <wsdl:output message="tns:PingSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="PostStandardData">
+      <wsdl:input message="tns:PostStandardDataSoapIn" />
+      <wsdl:output message="tns:PostStandardDataSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetIncidents">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get the list of incidents that a specific user has access to.</wsdl:documentation>
+      <wsdl:input message="tns:GetIncidentsSoapIn" />
+      <wsdl:output message="tns:GetIncidentsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddIncident">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Add an incident to WebEOC</wsdl:documentation>
+      <wsdl:input message="tns:AddIncidentSoapIn" />
+      <wsdl:output message="tns:AddIncidentSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetLists">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get a DataTable of lists. Administrator access required</wsdl:documentation>
+      <wsdl:input message="tns:GetListsSoapIn" />
+      <wsdl:output message="tns:GetListsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetListItems">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get a DataTable of items in a WebEOC list. Administrator access required</wsdl:documentation>
+      <wsdl:input message="tns:GetListItemsSoapIn" />
+      <wsdl:output message="tns:GetListItemsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetListItemsByListName">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get a DataTable of items in a WebEOC list that a specific user has access to. Administrator access required</wsdl:documentation>
+      <wsdl:input message="tns:GetListItemsByListNameSoapIn" />
+      <wsdl:output message="tns:GetListItemsByListNameSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="SaveList">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Save a WebEOC list. Administrator access required</wsdl:documentation>
+      <wsdl:input message="tns:SaveListSoapIn" />
+      <wsdl:output message="tns:SaveListSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="DeleteList">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Delete a WebEOC list. Administrator access required</wsdl:documentation>
+      <wsdl:input message="tns:DeleteListSoapIn" />
+      <wsdl:output message="tns:DeleteListSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="SaveListItem">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Save a WebEOC list item. Administrator access required</wsdl:documentation>
+      <wsdl:input message="tns:SaveListItemSoapIn" />
+      <wsdl:output message="tns:SaveListItemSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="DeleteListItem">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Delete a WebEOC list item. Administrator access required</wsdl:documentation>
+      <wsdl:input message="tns:DeleteListItemSoapIn" />
+      <wsdl:output message="tns:DeleteListItemSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="APIHttpGet" />
+  <wsdl:portType name="APIHttpPost" />
+  <wsdl:binding name="APISoap" type="tns:APISoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="AddAttachment">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/AddAttachment" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPositions">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetPositions" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUsersByPosition">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetUsersByPosition" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPositionsForUser">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetPositionsForUser" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddUser">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/AddUser" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddUserToPosition">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/AddUserToPosition" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RemoveUserFromPosition">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/RemoveUserFromPosition" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DeleteUserIfNoPositions">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/DeleteUserIfNoPositions" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DeleteUser">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/DeleteUser" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBoardNames">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetBoardNames" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetInputViews">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetInputViews" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDisplayViews">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetDisplayViews" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetViewFields">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetViewFields" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddData">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/AddData" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateData">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/UpdateData" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateDataBatch">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/UpdateDataBatch" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddRelatedData">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/AddRelatedData" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateRelatedData">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/UpdateRelatedData" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetData">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetData" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetFilteredData">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetFilteredData" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetFilteredDataV2">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetFilteredDataV2" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUpdatedData">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetUpdatedData" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDataByDataId">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetDataByDataId" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Ping">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/Ping" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PostStandardData">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/PostStandardData" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetIncidents">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetIncidents" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddIncident">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/AddIncident" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetLists">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetLists" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetListItems">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetListItems" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetListItemsByListName">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetListItemsByListName" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SaveList">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/SaveList" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DeleteList">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/DeleteList" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SaveListItem">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/SaveListItem" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DeleteListItem">
+      <soap:operation soapAction="urn:com:esi911:webeoc7:api:1.0/DeleteListItem" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="APISoap12" type="tns:APISoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="AddAttachment">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/AddAttachment" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPositions">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetPositions" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUsersByPosition">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetUsersByPosition" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPositionsForUser">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetPositionsForUser" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddUser">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/AddUser" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddUserToPosition">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/AddUserToPosition" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RemoveUserFromPosition">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/RemoveUserFromPosition" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DeleteUserIfNoPositions">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/DeleteUserIfNoPositions" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DeleteUser">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/DeleteUser" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBoardNames">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetBoardNames" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetInputViews">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetInputViews" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDisplayViews">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetDisplayViews" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetViewFields">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetViewFields" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddData">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/AddData" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateData">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/UpdateData" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateDataBatch">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/UpdateDataBatch" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddRelatedData">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/AddRelatedData" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateRelatedData">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/UpdateRelatedData" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetData">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetData" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetFilteredData">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetFilteredData" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetFilteredDataV2">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetFilteredDataV2" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUpdatedData">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetUpdatedData" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDataByDataId">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetDataByDataId" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Ping">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/Ping" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PostStandardData">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/PostStandardData" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetIncidents">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetIncidents" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddIncident">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/AddIncident" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetLists">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetLists" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetListItems">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetListItems" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetListItemsByListName">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/GetListItemsByListName" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SaveList">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/SaveList" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DeleteList">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/DeleteList" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SaveListItem">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/SaveListItem" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DeleteListItem">
+      <soap12:operation soapAction="urn:com:esi911:webeoc7:api:1.0/DeleteListItem" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="APIHttpGet" type="tns:APIHttpGet">
+    <http:binding verb="GET" />
+  </wsdl:binding>
+  <wsdl:binding name="APIHttpPost" type="tns:APIHttpPost">
+    <http:binding verb="POST" />
+  </wsdl:binding>
+  <wsdl:service name="API">
+    <wsdl:port name="APISoap" binding="tns:APISoap">
+      <soap:address location="http://demo.esi911.com/sandbox/api.asmx" />
+    </wsdl:port>
+    <wsdl:port name="APISoap12" binding="tns:APISoap12">
+      <soap12:address location="http://demo.esi911.com/sandbox/api.asmx" />
+    </wsdl:port>
+    <wsdl:port name="APIHttpGet" binding="tns:APIHttpGet">
+      <http:address location="http://demo.esi911.com/sandbox/api.asmx" />
+    </wsdl:port>
+    <wsdl:port name="APIHttpPost" binding="tns:APIHttpPost">
+      <http:address location="http://demo.esi911.com/sandbox/api.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
