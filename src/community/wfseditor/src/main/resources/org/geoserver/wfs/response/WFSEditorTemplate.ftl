@@ -15,6 +15,10 @@
     <link rel="stylesheet" type="text/css" href="/geoserver/lib/css/silk.css">
     <link rel="stylesheet" type="text/css" href="/geoserver/lib/css/geosilk.css">
 
+    <script src="/geoserver/lib/openlayers/proj4js-compressed.js" type="text/javascript"></script>
+    <!-- Projection definitions -->
+    <script src="/geoserver/lib/openlayers/defs/projections.js" type="text/javascript"></script>
+    
     <script type="text/javascript">
       var featureJson = ${featureJson};
       var fieldsJson = ${fieldsJson};
@@ -250,8 +254,10 @@
             createButton,
             deleteButton,
             modifyButton,
+            '-',
             undoButton,
             saveButton,
+            '->',
             csvButton,
             shapefileButton
           ]
