@@ -186,8 +186,8 @@ public class CreateFeatureTypePage extends AbstractOpenCopPage {
     List<Row> defaultRows = new ArrayList(Arrays.asList(new Row[]{
               new Row("version", "Integer"),
               new Row("description", "Text(500)"),
-              new Row("edit_url", "Text"),
-              new Row("the_geom", "Point")}));
+              new Row("the_geom", "Point"),
+              new Row("edit_url", "Text")}));
 
     ListView lv = null;  // represents attrs list in form
     DropDownChoice stores = null;

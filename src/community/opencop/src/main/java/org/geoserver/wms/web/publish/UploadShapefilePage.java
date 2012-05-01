@@ -71,7 +71,7 @@ public class UploadShapefilePage extends AbstractOpenCopPage {
     form.add(file);
 
     // create the add edit links checkbox
-    form.add(addEditLinks = new CheckBox("addEditLinks", new Model<Boolean>()));
+    form.add(addEditLinks = new CheckBox("addEditLinks", new Model<Boolean>(true)));
 
     // create the save and cancel buttons
     form.add(new BookmarkablePageLink("cancel", GeoServerHomePage.class));
