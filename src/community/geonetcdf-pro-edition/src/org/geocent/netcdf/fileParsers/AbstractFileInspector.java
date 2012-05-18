@@ -5,18 +5,28 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedList;
 
+import org.geocent.geotools.ParamInformation;
 import org.geocent.netcdf.NCDataEncapsulator;
-import org.geotools.geometry.GeneralEnvelope;
 
 import ucar.nc2.NetcdfFile;
 
 abstract public class AbstractFileInspector {
-    abstract public NCDataEncapsulator parseFiles(File rootDirectory, String parameterName, Double heightInMeters, Date time, GeneralEnvelope requestedArea);
-    abstract public float[] getBounds(File rootDirectory);
+	
+	abstract public String getTimeString();
+	abstract public String getElevationString();
+    abstract public NCDataEncapsulator parseFiles(String parameterName, Double heightInMeters, Date time, ParamInformation paramInfo);
+    abstract public float[] getBounds();
     /*
      * In the future we need to have an inventory of known files in the system and what parameters (at the least) they contain, for now we will search for the
      * data we need in every nc file under the root directory
      */
+    
+    protected File rootDirectory;
+    
+    public AbstractFileInspector(File rootDirectory){
+    	this.rootDirectory = rootDirectory;
+    }
+    
     protected static void recursiveParse(LinkedList<File> files, File f) {
         if (f.isDirectory()) {
             for (File file : f.listFiles()) {

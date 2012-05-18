@@ -1,187 +1,147 @@
 package org.geocent.netcdf;
 
-import java.awt.Color;
 import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
-import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
-import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
 import javax.media.jai.DataBufferFloat;
+
+import org.geocent.geotools.ParamInformation;
+import org.geotools.geometry.Envelope2D;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.opengis.geometry.Envelope;
 
 @SuppressWarnings("unused")
 public class NCDataEncapsulator implements Serializable {
 
     private static final long serialVersionUID = 5274683324298458872L;
     @SuppressWarnings("rawtypes")
-    private LinkedList[][] imageArray;
-    private float[][] flattenedImageArray;
+    private Float[][] imageArray;
     private boolean flattened;
     private int imageWidth;
     private int imageHeight;
+    private double lonSkip;
+    private double latSkip;
     private String parameterName;
     private String unit;
-    private Color[] colorValues;
-    private static Color transparent = new Color(0, 0, 0, 255);
     private int pointsPerDegree;
+    private ParamInformation paramInfo;
+    private double gridLeftLon;
+    private double gridRightLon;
+    private double gridUpLat;
+    private double gridLowLat;
+    private double gridLonSpan;
+    private double gridLatSpan;
+    private LinkedList<Double> latList = new LinkedList<Double>();
+    private LinkedList<Double> lonList = new LinkedList<Double>();
     private float highValue = Float.NEGATIVE_INFINITY;
     private float lowValue = Float.POSITIVE_INFINITY;
     private Random test = new Random();
 
-    public NCDataEncapsulator(int pointsPerDegree, String parameterName, String unitOfMeasure) {
+    public NCDataEncapsulator(int pointsPerDegree, String parameterName, String unitOfMeasure, ParamInformation paramInfo) {
         this.pointsPerDegree = pointsPerDegree;
         this.parameterName = parameterName;
         this.unit = unitOfMeasure;
-        /*
-         * Very wasteful at this point because most files are not world wide, but this makes merging easier
-         */
+        this.paramInfo = paramInfo;
+
         flattened = false;
-        imageWidth = 360 * pointsPerDegree;
-        imageHeight = 180 * pointsPerDegree;
-        imageArray = new LinkedList[imageWidth][imageHeight];
-        flattenedImageArray = new float[imageWidth][imageHeight];
-        colorValues = createColorArray();
-    }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void setImagePoint(float lat, float lon, float value) {
-        int latIndex = 0;
-        int lonIndex = 0;
-        try {
-            /*
-             * TODO Coordinate must not be negative (needs to be in 0-360 or 0-180 format). This is such a stupid way of doing this, please think of a better
-             * way.
-             */
+        /*
+         * We need to create a buffer for the resulting image. The size of the image is dictated by the WMS request
+         */
+        imageWidth = Math.abs(this.paramInfo.getDim().getSpan(0));
+        imageHeight = Math.abs(this.paramInfo.getDim().getSpan(1));
+        imageArray = new Float[imageWidth][imageHeight];
 
-            /* We want the point -180 lon and 90 lat to be point 0,0 in the raster rectangle, so we'll need to flip the sign of the lat */
-            lat = lat * -1.0f;
-
-            if (lat < 0)
-                lat = 90 - Math.abs(lat);
-            else
-                lat = lat + 90;
-
-            if (lon < 0)
-                lon = 180 - Math.abs(lon);
-            else
-                lon = lon + 180;
-
-            lat = lat + 1;
-
-            /*
-             * I don't know what the deal with this data is, sometimes we have values greater than you'd expect... if we detect that I'm just going to throw it
-             * out
-             */
-            if (lat < 0 || lat > 180 || lon < 0 || lon > 360)
-                return;
-
-            lonIndex = roundToNearestIndex(lon);
-            latIndex = roundToNearestIndex(lat);
-
-            if (imageArray[lonIndex][latIndex] != null)
-                imageArray[lonIndex][latIndex].add(value);
-            else {
-                imageArray[lonIndex][latIndex] = new LinkedList();
-                imageArray[lonIndex][latIndex].add(value);
+        /*
+         * We want to initialize the points to NaN, When these values are being populated, we will look at the "best" files first (the ones with the latest
+         * initial time and the highest resolution, that way the "best" data will go into the data encapsulator first, if the NCParser detects that a value has
+         * already been added in a specific position, it will skip that position
+         */
+        for (int i = 0; i < imageWidth; i++) {
+            for (int j = 0; j < imageHeight; j++) {
+                imageArray[i][j] = Float.NaN;
             }
-        } catch (Exception e) {
-            /* Do nothing, I will deal with these edge cases later. */
+        }
+
+        /*
+         * We need to store the bounding region that we're interested in for this particular request
+         */
+        Rectangle2D rec = paramInfo.getRequestedEnvelope().toRectangle2D();
+        gridLeftLon = rec.getMinX() < -180 ? -180 : rec.getMinX();
+        gridRightLon = rec.getMaxX() > 180 ? 180 : rec.getMaxX();
+        gridUpLat = rec.getMaxY() > 90 ? 90 : rec.getMaxY();
+        gridLowLat = rec.getMinY() < -90 ? -90 : rec.getMinY();
+        
+        if(Math.abs(gridLeftLon - gridRightLon) < 0.05){
+            /*geoserver complains about envelopes being too small, we need to give a bigger envelope*/
+            if(gridLeftLon > -179){
+                gridLeftLon = gridLeftLon + -1;
+            }
+            else if(gridRightLon < 179){
+                gridRightLon = gridRightLon - 1;
+            }
+        }
+        if(Math.abs(gridUpLat - gridLowLat) < 0.05){
+            if(gridLowLat > -89){
+                gridLowLat = gridLowLat + -1;
+            }
+            else if(gridUpLat < 89){
+                gridUpLat = gridUpLat + 1;
+            }
+        }
+        
+        gridLonSpan = Math.abs((gridRightLon - gridLeftLon)) / imageWidth;
+        gridLatSpan = Math.abs(gridUpLat - gridLowLat) / imageHeight;
+        
+        for (int i = 0; i < imageHeight; i++) {
+            latList.add(gridLowLat + gridLatSpan * i);
+        }
+        
+        for (int i = 0; i < imageWidth; i++) {
+            lonList.add(gridLeftLon + gridLonSpan * i);
         }
     }
 
-    private int roundToNearestIndex(float coordinate) {
-
-        float decimalPoint = coordinate - ((float) ((int) coordinate));
-        float minDiff = 1.0f;
-        int minIndex = 0;
-        for (int i = 0; i < pointsPerDegree; i++) {
-            float diff = Math.abs((i * 1.0f) / pointsPerDegree - decimalPoint);
-            if (diff < minDiff) {
-                minDiff = diff;
-                minIndex = i;
-            }
-        }
-        int returnPoint = (((int) coordinate) * pointsPerDegree + minIndex); /*-1 to convert it to 0 based*/
-        if (returnPoint < 0)
-            return 0; /* TODO: make this work right */
-        return returnPoint;
+    public List<Double> getDesiredLats() {
+        return latList;
     }
 
-    @SuppressWarnings({ "rawtypes" })
-    public void flatten() {
-        if (flattened)
-            return; /* We have already flattened this object */
-        for (int i = 0; i < imageArray.length; i++) {
-            for (int j = 0; j < imageArray[i].length; j++) {
-                BigDecimal biggie = new BigDecimal("0");
+    public List<Double> getDesiredLons() {
+        return lonList;
+    }
 
-                LinkedList numbers = imageArray[i][j];
-                /*
-                 * We didn't have any data at this particular point, so we'll fill it with NaN which will translate to a transparent value
-                 */
-                if (numbers == null) {
-                    flattenedImageArray[i][j] = Float.NaN;
-                    continue;
-                }
-
-                long points = numbers.size();
-                for (Object f : numbers) {
-                    /*
-                     * there is a limitation with making typed linked lists in 2d arrays, I can assure you these are all floats.
-                     */
-                    biggie = biggie.add(new BigDecimal((Float) f));
-                }
-                float averageValue = biggie.divide(new BigDecimal(points), 2, BigDecimal.ROUND_HALF_UP).floatValue();
-                numbers.clear();
-                flattenedImageArray[i][j] = averageValue;
-
-                if (averageValue < lowValue)
-                    lowValue = averageValue;
-                if (averageValue > highValue)
-                    highValue = averageValue;
-
-            }
-        }
-        flattened = true;
-        imageArray = null; /* This object is pretty huge so we need to null it out so it won't waste space */
+    public Envelope getGeneralEnvelope() {
+        final Envelope returnedEnv = new Envelope2D(DefaultGeographicCRS.WGS84, gridLeftLon, gridLowLat, (gridRightLon - gridLeftLon), (gridUpLat - gridLowLat));
+        return returnedEnv;
     }
 
     public WritableRaster getWritableRaster() {
-
-        if (!flattened)
-            flatten();
         int imageBufferLen = imageWidth * imageHeight;
         float[] imageBuffer = new float[imageBufferLen];
 
         long numZeros = 0;
         int k = 0;
-        for (int height = 0; height < flattenedImageArray[0].length; height++) {
-            for (int width = 0; width < flattenedImageArray.length; width++) {
-                imageBuffer[k] = flattenedImageArray[width][height];
+        for (int height = 0; height < imageArray[0].length; height++) {
+            for (int width = 0; width < imageArray.length; width++) {
+                imageBuffer[k] = imageArray[width][height];
                 k++;
             }
         }
-        System.out.println("The image is " + numZeros / (imageBuffer.length * 1.0) + " percent zero");
 
         int[] nBits = { 32 };
         ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
@@ -189,20 +149,6 @@ public class NCDataEncapsulator implements Serializable {
         SampleModel sm = cm.createCompatibleSampleModel(imageWidth, imageHeight);
         WritableRaster raster = Raster.createWritableRaster(sm, new DataBufferFloat(imageBuffer, imageBuffer.length), new Point(0, 0));
         return raster;
-    }
-
-    /* Returns a buffered ARGB image with a custom color value map */
-    public BufferedImage getBufferedImage() {
-        if (!flattened)
-            flatten();
-        BufferedImage img = new BufferedImage(flattenedImageArray.length, flattenedImageArray[0].length, BufferedImage.TYPE_INT_ARGB);
-        for (int i = 0; i < flattenedImageArray.length; i++) {
-            for (int j = 0; j < flattenedImageArray[i].length; j++) {
-                img.setRGB(i, j, getNormalizedColorValue(flattenedImageArray[i][j]));
-            }
-        }
-
-        return img;
     }
 
     private BufferedImage flipImage(BufferedImage img) {
@@ -218,44 +164,6 @@ public class NCDataEncapsulator implements Serializable {
         return img;
     }
 
-    public void writeImage(String fileName) {
-        if (!flattened)
-            flatten();
-
-        Iterator<ImageWriter> writerIterator = ImageIO.getImageWritersByFormatName("png");
-        ImageWriter writer = writerIterator.next();
-        File f = new File(fileName + ".png");
-        ImageOutputStream ios = null;
-
-        BufferedImage img = getBufferedImage();
-
-        try {
-            ios = ImageIO.createImageOutputStream(f);
-            writer.setOutput(ios);
-            writer.write(img);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } finally {
-            try {
-                ios.flush();
-                ios.close();
-            } catch (Exception e1) {
-                e1.printStackTrace();
-            }
-        }
-    }
-
-    private int getNormalizedColorValue(Float value) {
-        if (value.equals(Float.NaN)) {
-            return transparent.getRGB();
-        }
-        float highMinusLow = highValue - lowValue;
-        double y = (value - lowValue) / highMinusLow;
-        Color colorValue = colorValues[(int) Math.round(y * (colorValues.length - 1))];
-        return colorValue.getRGB();
-    }
-
     private short getNormalizedValue(Float value) {
         if (value.equals(Float.NaN)) {
             return (short) 0;
@@ -266,30 +174,43 @@ public class NCDataEncapsulator implements Serializable {
         return returnVal;
     }
 
-    private Color[] createColorArray() {
-        /* Is there a more elegant way to do this? Probably. */
-        Color[] colors = new Color[1276];
-
-        for (int i = 0; i < 256; i++) {
-            colors[i] = new Color(0, 0, i, 255);
-        }
-        for (int i = 1; i < 256; i++) {
-            colors[256 + i - 1] = new Color(0, i, 255, 255);
-        }
-        int j = 0;
-        for (int i = 254; i >= 0; i--) {
-            colors[511 + j] = new Color(0, 255, i, 255);
-            j++;
-        }
-        for (int i = 0; i < 256; i++) {
-            colors[765 + i] = new Color(i, 255, 0, 255);
-        }
-        j = 0;
-        for (int i = 254; i >= 0; i--) {
-            colors[1021 + j] = new Color(255, i, 0, 255);
-            j++;
-        }
-        return colors;
+    public Float[][] getImageArray() {
+        return imageArray;
     }
 
+    public void setImageArray(Float[][] imageArray) {
+        this.imageArray = imageArray;
+    }
+
+    public double getGridLeftLon() {
+        return gridLeftLon;
+    }
+
+    public void setGridLeftLon(double gridLeftLon) {
+        this.gridLeftLon = gridLeftLon;
+    }
+
+    public double getGridRightLon() {
+        return gridRightLon;
+    }
+
+    public void setGridRightLon(double gridRightLon) {
+        this.gridRightLon = gridRightLon;
+    }
+
+    public double getGridUpLat() {
+        return gridUpLat;
+    }
+
+    public void setGridUpLat(double gridUpLat) {
+        this.gridUpLat = gridUpLat;
+    }
+
+    public double getGridLowLat() {
+        return gridLowLat;
+    }
+
+    public void setGridLowLat(double gridLowLat) {
+        this.gridLowLat = gridLowLat;
+    }
 }

@@ -83,7 +83,6 @@ public class NCDataCacher {
             return;
 
         ObjectOutput output = null;
-        data.flatten();
         String filename = scratchLocation + "/NCDataFile" + parameter + elevation.toString() + Long.toHexString(time.getTime()) + ".ncDataEncapsulator";
         try {
             OutputStream file = new FileOutputStream(filename);

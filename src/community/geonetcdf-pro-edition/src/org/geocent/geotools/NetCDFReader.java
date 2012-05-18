@@ -41,14 +41,13 @@ import org.opengis.referencing.operation.TransformException;
 public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCoverageReader {
 
     private File rootDir;
-    // private Rectangle actualDim = new Rectangle(-180, -90, 179, 89);
     private Rectangle actualDim;
     static GridCoverageFactory gcf = new GridCoverageFactory();
     /*
      * In the future the exact file inspector we use can be deteremined by a metadata file in the netcdf root directory, like if its NRL formatted data, etc.
      * The purpose of the AbstractFileInspector is to abstract that all away and get a buffered image back. For now we assume its all "NAVO" formatted
      */
-    private AbstractFileInspector fileInsp = new FileInspector();
+    private AbstractFileInspector fileInsp;
 
     String timeAttribute;
 
@@ -56,6 +55,7 @@ public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCo
 
     public NetCDFReader(File netcdfRootDirectory, Hints hints) {
         rootDir = netcdfRootDirectory;
+        fileInsp = new FileInspector(rootDir);
         this.coverageName = "NetCDF coverage";
 
         try {
@@ -66,7 +66,8 @@ public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCo
             e1.printStackTrace();
         }
 
-        float[] fileBounds = fileInsp.getBounds(rootDir);
+        float[] fileBounds = fileInsp.getBounds();
+        /*Rectangle dimensions added as: LEFT LON, BOTTOM LAT, RIGHT LON, UPPER LAT*/
         actualDim = new Rectangle((int) fileBounds[0], (int) fileBounds[2], (int) fileBounds[1], (int) fileBounds[3]);
 
         GeneralEnvelope env = new GeneralEnvelope(new double[] { 0, 0 }, new double[] { 0, 0 });
@@ -97,23 +98,21 @@ public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCo
             throw new IllegalArgumentException("Params must not be null");
         }
         /*
-         * Our default "in the real world" will the current time and a elevation of 0, but since we have old data, the default for now will be 10-15-2010 since
-         * I know we have some stuff for it
+         * TODO: Our default "in the real world" will the current time and a elevation of 0
          */
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         if (paramInfo.getTime() == null) {
             try {
-                paramInfo.setTime(sdf.parse("2010-10-15 00:00:00"));
+                paramInfo.setTime(sdf.parse("2012-05-17 00:00:00"));
             } catch (ParseException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
         if (paramInfo.getElevation() == null) {
             paramInfo.setElevation(0.0);
         }
-        NCDataEncapsulator ncData = fileInsp.parseFiles(rootDir, paramInfo.getParameter(), paramInfo.getElevation(), paramInfo.getTime(), paramInfo);
-        
+        NCDataEncapsulator ncData = fileInsp.parseFiles(paramInfo.getParameter(), paramInfo.getElevation(), paramInfo.getTime(), paramInfo);
+
         final GridCoverageFactory factory = new GridCoverageFactory(hints);
         GridCoverage2D coverage = factory.create(rootDir.getName(), ncData.getWritableRaster(), ncData.getGeneralEnvelope());
         return coverage;
@@ -150,12 +149,9 @@ public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCo
             }
 
             if (name.equals("ELEVATION")) {
-//                if (param.getValue() != null && ((Double) param.getValue()) != 0.0) {
-//                    elevation = (Double) param.getValue();
-//                }
-              final Object value = param.getValue();
-              if(value!=null)
-                elevation = (Double)((List<?>) value).get(0);
+                final Object value = param.getValue();
+                if (value != null)
+                    elevation = (Double) ((List<?>) value).get(0);
             }
 
             if (name.equals(NetCDFFormat.PARAMETER.getName().toString())) {
@@ -254,12 +250,13 @@ public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCo
         return refEnv;
     }
 
-    // These two methods provide the support for Time and Elevation.
-    // Check out ImageMosaicReader from GeoTools-8 imagemosaic datasource module
-    // for more inspiration.
+    /*
+     * These two methods provide the support for Time and Elevation. Check out ImageMosaicReader from GeoTools-8 imagemosaic datasource module for more
+     * inspiration.
+     */
     @Override
     public String[] getMetadataNames() {
-        final String []parentNames = super.getMetadataNames();
+        final String[] parentNames = super.getMetadataNames();
         final List<String> metadataNames = new ArrayList<String>();
         metadataNames.add(TIME_DOMAIN);
         metadataNames.add(HAS_TIME_DOMAIN);
@@ -271,54 +268,35 @@ public class NetCDFReader extends AbstractGridCoverage2DReader implements GridCo
         metadataNames.add(ELEVATION_DOMAIN_MAXIMUM);
         metadataNames.add(HAS_ELEVATION_DOMAIN);
         metadataNames.add(ELEVATION_DOMAIN_RESOLUTION);
-        if(parentNames!=null)
+        if (parentNames != null)
             metadataNames.addAll(Arrays.asList(parentNames));
         return metadataNames.toArray(new String[metadataNames.size()]);
     }
 
     @Override
     public String getMetadataValue(final String name) {
-        final String superValue=super.getMetadataValue(name);
-        if(superValue!=null)
+        final String superValue = super.getMetadataValue(name);
+        if (superValue != null)
             return superValue;
-        
-        if (name.equalsIgnoreCase(HAS_ELEVATION_DOMAIN))
-//                return String.valueOf(elevationAttribute != null);
-            return String.valueOf(true);
-      
-        if (name.equalsIgnoreCase(HAS_TIME_DOMAIN))
-            return String.valueOf(timeAttribute != null);
-//              return String.valueOf(true);
 
-//            if (name.equalsIgnoreCase(TIME_DOMAIN_RESOLUTION))
-//                return null;
-//    
-//            final boolean getTimeDomain = (timeAttribute != null && name.equalsIgnoreCase("time_domain"));
-//            if (getTimeDomain) {
-//                return extractTimeDomain();
-//    
-//            }
-//    
-//            final boolean getTimeExtrema = timeAttribute != null
-//                    && (name.equalsIgnoreCase("time_domain_minimum") || name.equalsIgnoreCase("time_domain_maximum"));
-//            if (getTimeExtrema) {
-//                return extractTimeExtrema(name);
-//    
-//            }
-//    
-        final boolean getElevationAttribute = (/*elevationAttribute != null &&*/ name.equalsIgnoreCase("elevation_domain"));
-        if (getElevationAttribute) {
-            return "0,-1000,-2000";
-//                return extractElevationDomain();
+        /*
+         * TODO: This is a huge assumption, our data will NOT always have time and elevation information, we are just assuming it will always be 4d data for
+         * simplicitiy, in the future this must be fixed!
+         */
+        if (name.equalsIgnoreCase(HAS_ELEVATION_DOMAIN))
+            return String.valueOf(true);
+
+        if (name.equalsIgnoreCase(HAS_TIME_DOMAIN))
+            return String.valueOf(true);
+
+        /* Get the time string */
+        if (name.equalsIgnoreCase("time_domain")) {
+            return fileInsp.getTimeString();
         }
-        
-//    
-//            final boolean getElevationExtrema = elevationAttribute != null
-//                    && (name.equalsIgnoreCase("elevation_domain_minimum") || name.equalsIgnoreCase("elevation_domain_maximum"));
-//            if (getElevationExtrema) {
-//                return extractElevationExtrema(name);
-//    
-//            }
+        /* Get the elevation string */
+        if (name.equalsIgnoreCase("elevation_domain")) {
+            return fileInsp.getElevationString();
+        }
         return superValue;
     }
 }
