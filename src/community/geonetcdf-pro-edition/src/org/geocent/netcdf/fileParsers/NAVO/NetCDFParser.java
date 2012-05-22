@@ -49,10 +49,6 @@ public class NetCDFParser {
             Array lonArray = lon.read();
             Array latArray = lat.read();
 
-            /*
-             * TODO: I'm including some stupid error correction because some of these files have longitudes greater than 180 sometimes, that probably means
-             * something, but I'm too busy to find out what
-             */
             minAndMaxLon = getMinAndMaxFromArray(lonArray);
             if (minAndMaxLon[0] < -180) {
                 minAndMaxLon[0] = -180;
