@@ -1,0 +1,209 @@
+<html>
+  <wicket:head>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <style type="text/css">
+      table { width: 0; }
+    </style>
+    <script type="text/javascript" >
+      var eoc = (function() {
+
+        function removePipes(text) {
+          return text.replace(/\|/g, "")
+        }
+
+        // prevent the search from happening too ofen
+        var iconSearch = function() {
+          var timeout
+
+          function search() {
+            $('#icon-display-area').empty().text("Loading...")
+            $('#got').text("?")
+            var queryStr = $('#icon-search-terms').val()
+            var cql = cqlStr(queryStr)
+            $.getJSON(
+            "/geoserver/wfs",
+            { request: "GetFeature",
+              version: "1.1.0",
+              typeName: "opencop:icon",
+              outputFormat: "JSON",
+              maxFeatures: 10,
+              // startIndex: 10,  // will be used for pagination
+              CQL_FILTER: cql},
+            buildIconTable
+          );
+            setOutOfHowMany(cql)
+          }
+
+          return function() {
+            if(timeout) clearTimeout(timeout)
+            timeout = setTimeout(search, 800)
+          }
+        }()
+
+        function setOutOfHowMany(cql) {
+          $('#total').text('?')
+          $.ajax({
+            url: "/geoserver/wfs",
+            dataType: "xml",
+            data: { request: "GetFeature",
+              version: "1.1.0",
+              typeName: "opencop:icon",
+              resultType: "hits",
+              CQL_FILTER: cql },
+            success: function(doc) {
+              var num = $(doc).find("[numberOfFeatures]").first().attr("numberOfFeatures")
+              $('#total').text(num)
+            }
+          })
+        }
+
+        function cqlStr(queryStr) {
+          return queryStr
+          .split(" ")
+          .map(function(n) { return " name like '%" + n + "%' " })
+          .join("and")
+        }
+
+        function buildIconTable(json) {
+          var props = $(json.features).map(function(i, n) { return n.properties })
+          $('#got').text(props.length)
+          var table = $('<table>').width('25em')
+          props.each(function(i, n) {
+            var img = $('<img>').attr('src', n.url)
+            var imgtd = $('<td>').append(img)
+            var name = $('<td>').text(n.name)
+            var tr = $('<tr>')
+            .append(imgtd, name)
+            .click(function() {selectIcon(img)})
+            table.append(tr)
+          })
+          $('#icon-display-area').empty().append(table)
+        }
+
+        function selectIcon(img) {
+          var src = img.attr('src')
+          $('#iconname').val(src)
+          updateIconPreview()
+        }
+
+        function updateIconPreview() {
+          var src = $('#iconname').val()
+          $('#icon-preview').attr('src', src)
+        }
+
+        return {
+          iconSearch: iconSearch,
+          updateIconPreview: updateIconPreview,
+
+          addField: function() {
+            $('tr.field:last').clone().appendTo('table.fields')
+            $('tr.field:last .name').val("")
+            $('tr.field:last .name').focus()
+          },
+
+          deleteField: function(span) {
+            if( $('tr.field').length > 1 ) {
+              $(span).parents('tr.field').remove()
+            }
+          },
+
+          changeStyleOption: function(input) {
+            $("#use-existing-style-block")[input.checked ? "show" : "hide"]()
+            $("#use-new-style-block")[!input.checked ? "show" : "hide"]()
+          },
+
+          onsubmit: function() {
+            $("[name=serialized-fields]").val(
+            $('tr.field')
+            .map(function(i, tr) {
+              return removePipes($(tr).find('input').val())
+                + "|"
+                + removePipes($(tr).find('select :selected').text())})
+            .toArray().join("|"))
+          }
+        }
+      }())
+
+      $(function() {
+        var textfield = $('input.text:first')
+        if(textfield) textfield.focus().select()
+        eoc.iconSearch()
+      })
+
+    </script>
+  </wicket:head>
+  <body>
+  <wicket:extend>
+    <form wicket:id="featureTypeForm" onsubmit="return eoc.onsubmit()">
+      <fieldset>
+        <ul>
+          <li>
+            <label for="layername">Layer Name</label>
+            <input type="text" class="text" wicket:id="layername"></input>
+          </li>
+          <li>
+            <label for="storesDropDown">Data Store</label>
+            <select wicket:id="storesDropDown"></select>
+          </li>
+        </ul>
+      </fieldset>
+
+
+      <fieldset>
+        <legend><span><wicket:message key="style">Style</wicket:message></span></legend> 
+
+        <input id="useExistingStyle" class="field checkbox" type="checkbox" wicket:id="useExistingStyle" onclick="eoc.changeStyleOption(this)"></input>
+        <label for="useExistingStyle" class="choice"><wicket:message key="useExistingStyle">Use an Existing Style</wicket:message></label>
+
+        <!-- use an existing style -->
+        <div id="use-existing-style-block" style="display:none">
+          <ul>
+            <li>
+              <label for="defaultStyle"><wicket:message key="defaultStyle">Default Style</wicket:message></label>
+              <select id="defaultStyle" class="select" wicket:id="defaultStyle"></select>
+            </li>
+            <li>
+              <img wicket:id="defaultStyleLegendGraphic"></img>
+            </li>
+          </ul>
+        </div>
+        <!-- use a new style -->
+        <div id="use-new-style-block" >
+          <label for="icon-search-terms">Icon Search</label>
+          <input type="text" class="text" id="icon-search-terms" onkeypress="eoc.iconSearch()" />
+          <p>Viewing <span id="got">0</span> of <span id="total">?</span> icons</p>
+          <div id="icon-display-area">Loading icon images...</div>
+          <label for="iconname">Icon Full Url</label>
+          <img src="" id="icon-preview" />
+          <input type="text" class="text" id="iconname" wicket:id="iconname"
+                 onkeyup="eoc.updateIconPreview()"></input>
+        </div>
+
+        <input type="hidden" wicket:id="serialized-fields"></input>
+      </fieldset>
+
+
+      <fieldset>
+        <legend><span><wicket:message key="schema">Schema</wicket:message></span></legend> 
+        <p style="margin:15px 0px 0px 0px">
+          <span class="add-link" onclick="eoc.addField()">Add new attribute</span>
+        </p>
+        <table class="fields">
+          <tr wicket:id="schema" class="field">
+            <td><span class="remove-link" onclick="eoc.deleteField(this)"></span></td>
+            <td><input type="text" wicket:id="name" class="text name"></input></td>
+            <td><select wicket:id="type" class="type"></select></td>
+          </tr>
+        </table>  
+      </fieldset>
+
+
+      <input type="submit" value="Save Feature Type" />
+      <!--    <div class="button-group selfclear">
+            <a href="#" wicket:id="save"><wicket:message key="save">Save</wicket:message></a>
+            <a href="#" wicket:id="cancel"><wicket:message key="cancel">Cancel</wicket:message></a>
+          </div>-->
+    </form>
+  </wicket:extend>
+</body>
+</html>

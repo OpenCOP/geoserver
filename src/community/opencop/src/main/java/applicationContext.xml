@@ -1,0 +1,37 @@
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+  
+  <bean id="opencopCategory" class="org.geoserver.web.Category">
+     <property name="nameKey" value="category.opencop"/>
+     <property name="order" value="300"/>
+  </bean>
+  
+  <bean id="createFeatureTypePage" class="org.geoserver.web.MenuPageInfo">
+    <property name="id" value="createFeatureTypePage"/>
+    <property name="titleKey" value="CreateFeatureTypePage.title"/>
+    <property name="descriptionKey" value="CreateFeatureTypePage.description"/>
+    <property name="componentClass" value="org.geoserver.wms.web.publish.CreateFeatureTypePage"/>
+    <property name="category" ref="opencopCategory"/>
+    <property name="order" value="10"/>
+  </bean>
+  
+  <bean id="uploadShapefilePage" class="org.geoserver.web.MenuPageInfo">
+    <property name="id" value="uploadShapefilePage"/>
+    <property name="titleKey" value="UploadShapefilePage.title"/>
+    <property name="descriptionKey" value="UploadShapefilePage.description"/>
+    <property name="componentClass" value="org.geoserver.wms.web.publish.UploadShapefilePage"/>
+    <property name="category" ref="opencopCategory"/>
+    <property name="order" value="20"/>
+  </bean>
+
+  <bean id="addEditUrlPage" class="org.geoserver.web.MenuPageInfo">
+    <property name="id" value="addEditUrlPage"/>
+    <property name="titleKey" value="AddEditUrlPage.title"/>
+    <property name="descriptionKey" value="AddEditUrlPage.description"/>
+    <property name="componentClass" value="org.geoserver.wms.web.publish.AddEditUrlPage"/>
+    <property name="category" ref="opencopCategory"/>
+    <property name="order" value="30"/>
+  </bean>
+</beans>
+  

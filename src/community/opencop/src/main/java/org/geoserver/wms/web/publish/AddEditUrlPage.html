@@ -1,0 +1,25 @@
+<html xmlns:wicket="http://wicket.apache.org/">
+  <body>
+<wicket:extend>
+  <!-- the table component -->
+  <div wicket:id="table"></div>
+	
+	<wicket:fragment wicket:id="iconFragment">
+		<img wicket:id="layerIcon" />
+	</wicket:fragment>
+  
+	<wicket:fragment wicket:id="existsFragment">
+		<img wicket:id="existsIcon" />
+	</wicket:fragment>
+  
+  <!-- The fragment for the common links -->
+  <wicket:fragment wicket:id="addEditUrlFragment">
+    <div style="white-space: nowrap;">
+      <a href="#" class="add-link" wicket:id="addEditUrlLink">
+        <wicket:message key="addEditUrlLink">Add Links</wicket:message></a>
+    </div>
+  </wicket:fragment>
+  
+</wicket:extend>
+</body>
+</html>

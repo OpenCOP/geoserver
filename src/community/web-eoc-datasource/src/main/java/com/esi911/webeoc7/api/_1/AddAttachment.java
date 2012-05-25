@@ -1,0 +1,221 @@
+
+package com.esi911.webeoc7.api._1;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+
+
+/**
+ * <p>Java class for anonymous complex type.
+ * 
+ * <p>The following schema fragment specifies the expected content contained within this class.
+ * 
+ * <pre>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="credentials" type="{urn:com:esi911:webeoc7:api:1.0}WebEOCCredentials" minOccurs="0"/>
+ *         &lt;element name="BoardName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="InputViewName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="AttachmentFieldName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="DataId" type="{http://www.w3.org/2001/XMLSchema}int"/>
+ *         &lt;element name="AttachmentFileData" type="{http://www.w3.org/2001/XMLSchema}base64Binary" minOccurs="0"/>
+ *         &lt;element name="AttachmentFileName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
+ * </pre>
+ * 
+ * 
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "", propOrder = {
+    "credentials",
+    "boardName",
+    "inputViewName",
+    "attachmentFieldName",
+    "dataId",
+    "attachmentFileData",
+    "attachmentFileName"
+})
+@XmlRootElement(name = "AddAttachment")
+public class AddAttachment {
+
+    protected WebEOCCredentials credentials;
+    @XmlElement(name = "BoardName")
+    protected String boardName;
+    @XmlElement(name = "InputViewName")
+    protected String inputViewName;
+    @XmlElement(name = "AttachmentFieldName")
+    protected String attachmentFieldName;
+    @XmlElement(name = "DataId")
+    protected int dataId;
+    @XmlElement(name = "AttachmentFileData")
+    protected byte[] attachmentFileData;
+    @XmlElement(name = "AttachmentFileName")
+    protected String attachmentFileName;
+
+    /**
+     * Gets the value of the credentials property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link WebEOCCredentials }
+     *     
+     */
+    public WebEOCCredentials getCredentials() {
+        return credentials;
+    }
+
+    /**
+     * Sets the value of the credentials property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link WebEOCCredentials }
+     *     
+     */
+    public void setCredentials(WebEOCCredentials value) {
+        this.credentials = value;
+    }
+
+    /**
+     * Gets the value of the boardName property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getBoardName() {
+        return boardName;
+    }
+
+    /**
+     * Sets the value of the boardName property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setBoardName(String value) {
+        this.boardName = value;
+    }
+
+    /**
+     * Gets the value of the inputViewName property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getInputViewName() {
+        return inputViewName;
+    }
+
+    /**
+     * Sets the value of the inputViewName property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setInputViewName(String value) {
+        this.inputViewName = value;
+    }
+
+    /**
+     * Gets the value of the attachmentFieldName property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getAttachmentFieldName() {
+        return attachmentFieldName;
+    }
+
+    /**
+     * Sets the value of the attachmentFieldName property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setAttachmentFieldName(String value) {
+        this.attachmentFieldName = value;
+    }
+
+    /**
+     * Gets the value of the dataId property.
+     * 
+     */
+    public int getDataId() {
+        return dataId;
+    }
+
+    /**
+     * Sets the value of the dataId property.
+     * 
+     */
+    public void setDataId(int value) {
+        this.dataId = value;
+    }
+
+    /**
+     * Gets the value of the attachmentFileData property.
+     * 
+     * @return
+     *     possible object is
+     *     byte[]
+     */
+    public byte[] getAttachmentFileData() {
+        return attachmentFileData;
+    }
+
+    /**
+     * Sets the value of the attachmentFileData property.
+     * 
+     * @param value
+     *     allowed object is
+     *     byte[]
+     */
+    public void setAttachmentFileData(byte[] value) {
+        this.attachmentFileData = ((byte[]) value);
+    }
+
+    /**
+     * Gets the value of the attachmentFileName property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getAttachmentFileName() {
+        return attachmentFileName;
+    }
+
+    /**
+     * Sets the value of the attachmentFileName property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setAttachmentFileName(String value) {
+        this.attachmentFileName = value;
+    }
+
+}

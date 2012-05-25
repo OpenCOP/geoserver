@@ -1,0 +1,43 @@
+<project name="NetCDF Geoserver plugin" default="deploy">
+
+	<property name="deploy.dir" value="/home/pcoleman/software/geoserver-2.1-SNAPSHOT/webapps/geoserver/WEB-INF/lib" />
+
+	<path id="NetCDFPluginClassPath">
+		<fileset dir="./lib">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<target name="prepare">
+		<delete dir="./build" failonerror="false" />
+		<delete dir="./dist" failonerror="false" />
+		<mkdir dir="./build" />
+		<mkdir dir="./dist" />
+	</target>
+
+	<target name="compile" depends="prepare">
+		<echo message="compiling java source files..." />
+		<javac srcdir="./src" destdir="./build" debug="true" debuglevel="lines,vars,source" target="1.6" source="1.6" deprecation="on" includeantruntime="false">
+			<exclude name="**/test**" />
+			<classpath refid="NetCDFPluginClassPath" />
+		</javac>
+	</target>
+
+	<target name="jar" depends="combine-jars">
+		<jar destfile="./dist/netcdfReader.jar" basedir="./build">
+			<service type="org.geotools.coverage.grid.io.GridFormatFactorySpi" provider="org.geocent.geotools.NetCDFFormatFactorySPI" />
+		</jar>
+	</target>
+	<target name="deploy" depends="jar">
+		<copy file="./dist/netcdfReader.jar" todir="${deploy.dir}" />
+		<copy file="./dist/netcdfReader.jar" todir="/home/pcoleman" failonerror="false"/>
+	</target>
+
+	<target name="combine-jars" depends="compile">
+		<unzip dest="./build">
+			<fileset dir="./lib/non-geoserverlibs">
+				<include name="**/*.jar" />
+			</fileset>
+		</unzip>
+	</target>
+</project>

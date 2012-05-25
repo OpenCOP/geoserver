@@ -1,0 +1,42 @@
+<html xmlns:wicket="http://wicket.apache.org/">
+  <body>
+  <wicket:extend>
+
+    <div> 
+      <form wicket:id="form">
+        <fieldset>
+          <ul>
+            <li>
+              <label for="storesDropDown"><wicket:message key="storesDropDown">Datastore</wicket:message></label>
+              <select wicket:id="storesDropDown"></select>
+            </li>
+            <li>
+              <label for="defaultStyle"><wicket:message key="defaultStyle">Default Style</wicket:message></label>
+              <select id="defaultStyle" wicket:id="defaultStyle"></select>
+            </li>
+            <li>
+              <img wicket:id="defaultStyleLegendGraphic"></img>
+            </li>
+            <li>
+              <label for="layerTitle"><wicket:message key="layerTitle">Layer Title</wicket:message></label>
+              <input wicket:id="layerTitle" type="text" class="text"/>
+            </li>
+            <li>
+              <label for="file"><wicket:message key="file">Shapefile ZIP</wicket:message></label>
+              <input wicket:id="file" type="file"/>
+            </li>
+            <li>
+              <input id="addEditLinks" class="field checkbox" type="checkbox" wicket:id="addEditLinks"></input>
+              <label for="addEditLinks" class="choice"><wicket:message key="addEditLinks">Add Edit Links to the Layer</wicket:message></label>
+            </li>
+          </ul>
+        </fieldset>
+        <div class="button-group selfclear">
+          <a href="#" wicket:id="save"><wicket:message key="save">Save</wicket:message></a>
+          <a href="#" wicket:id="cancel"><wicket:message key="cancel">Cancel</wicket:message></a>
+        </div>
+      </form>
+    </div> 
+  </wicket:extend>
+</body>
+</html>
